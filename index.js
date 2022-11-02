@@ -1,12 +1,30 @@
+require('dotenv').config();
+require('./strategies/discord');
+
 const app = require('express')();
 const httpServer = require('http').createServer(app);
+const passport = require('passport');
+const routes = require('./routes/router');
+const mongoose = require('mongoose');
+const session = require('express-session');
+const Store = require('connect-mongo');
+const cors = require('cors');
+
 const BetObject = require('./objects/betObject');
 const BetResponseObject = require('./objects/betResponseObject');
 const RoomObject = require('./objects/roomObject');
 const BetResultService = require('./services/betResultService');
+
+const {getApiToken} = require('./services/api');
+
+
 const io = require('socket.io')(httpServer, {
   cors: { origins: '*' }
 });
+
+mongoose.connect(process.env.MONGOOSE);
+
+const port = process.env.PORT || 3000;
 
 sliceSize = 360 / 20;
 count = 0;
@@ -22,33 +40,30 @@ ableToBetWheel = true;
 wheelValues = ['W', '1', '8', '15', '4', '11', '18', '7', '14', '3', 'X', '10', '17', '6', '13', '2', '9', '16', '5', '12'];
 wheelColors = ['violetinis', 'žalias', 'mėlynas', 'raudonas', 'žalias', 'mėlynas', 'raudonas', 'žalias', 'mėlynas', 'raudonas', 'geltonas', 'žalias', 'mėlynas', 'raudonas', 'žalias', 'mėlynas', 'raudonas', 'žalias', 'mėlynas', 'raudonas'];
 
-//0 = W
-//1 = 1
-//2 = 8
-//3 = 15
-//4 = 4
-//5 = 11
-//6 = 18
-//7 = 7
-//8 = 14
-//9 = 3
-//10 = X
-//11 = 10
-//12 = 17
-//13 = 6
-//14 = 13
-//15 = 2
-//16 = 9
-//17 = 16
-//18 = 5
-//19 = 12
-
-const port = process.env.PORT || 3000;
-
-//setSpin(6);
 timeBetweenSpins();
 
 console.log(BetResultService.getBetStatus("colorGreen", 1, wheelValues, wheelColors));
+
+app.use(cors({
+  origin: ['http://localhost:4200'],
+  credentials: true
+}))
+
+app.use( session ({
+  secret: 'secret',
+  cookie: {
+    maxAge: 60000 * 60 * 24
+  },
+  resave: false,
+  saveUninitialized: false,
+  store: Store.create({mongoUrl: process.env.MONGOOSE})
+}))
+
+app.use( passport.initialize());
+app.use( passport.session());
+app.use('/api', routes);
+
+getApiToken();
 
 io.on("connection", (socket) => {
   console.log("CONNECT");
@@ -62,7 +77,7 @@ io.on("connection", (socket) => {
 
   socket.on('bet', clientBet => {
     if (ableToBetWheel) {
-      const newBet = new BetObject(socket.id, clientBet.clientId, clientBet.betAmount, clientBet.prediction);
+      const newBet = new BetObject(socket.id, clientBet.clientId, Math.abs(clientBet.betAmount), clientBet.prediction);
       console.log(clientBet);
       console.log(newBet);
       wheelBets.push(newBet);
