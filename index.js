@@ -15,7 +15,7 @@ const BetResponseObject = require('./objects/betResponseObject');
 const RoomObject = require('./objects/roomObject');
 const BetResultService = require('./services/betResultService');
 
-const {getApiToken} = require('./services/api');
+const { sendClientBet, sendClientBetOutcome } = require('./services/api');
 
 
 const io = require('socket.io')(httpServer, {
@@ -49,25 +49,22 @@ app.use(cors({
   credentials: true
 }))
 
-app.use( session ({
+app.use(session({
   secret: 'secret',
   cookie: {
     maxAge: 60000 * 60 * 24
   },
   resave: false,
   saveUninitialized: false,
-  store: Store.create({mongoUrl: process.env.MONGOOSE})
+  store: Store.create({ mongoUrl: process.env.MONGOOSE })
 }))
 
-app.use( passport.initialize());
-app.use( passport.session());
+app.use(passport.initialize());
+app.use(passport.session());
 app.use('/api', routes);
-
-getApiToken();
 
 io.on("connection", (socket) => {
   console.log("CONNECT");
-  console.log(socket.id);
 
   socket.on('getWheelMessages', () => {
     socket.emit('wheelMessages', wheelMessages);
@@ -77,10 +74,7 @@ io.on("connection", (socket) => {
 
   socket.on('bet', clientBet => {
     if (ableToBetWheel) {
-      const newBet = new BetObject(socket.id, clientBet.clientId, Math.abs(clientBet.betAmount), clientBet.prediction);
-      console.log(clientBet);
-      console.log(newBet);
-      wheelBets.push(newBet);
+      setBet(socket, clientBet);
     } else {
       socket.emit('betError', true);
     }
@@ -109,12 +103,12 @@ function spin() {
     } else {
       endSpin = true;
       wheelMessages.push('Ratas išsuko ' + wheelColors[spinValue] + ' ' + wheelValues[spinValue]);
-      sendStatusToClient();
       getClientStatusToMessage();
-      console.log("clear");
       clearInterval(SpinCount);
       setTimeout(() => {
+        sendStatusToClient();
         ableToBetWheel = true;
+        io.sockets.emit('newRound', true);
         wheelBets = [];
         timeBetweenSpins();
       }, 5000);
@@ -127,6 +121,12 @@ function timeBetweenSpins() {
   let spinTime = setInterval(function () {
     io.sockets.emit('timeTillSpin', spinTimer);
     spinTimer--;
+
+    if (spinTimer < 5) {
+      ableToBetWheel = false;
+      io.sockets.emit('betTimeEnd', true);
+    }
+
     if (spinTimer < 0) {
       clearInterval(spinTime);
       io.sockets.emit('resetWheel', true);
@@ -137,7 +137,6 @@ function timeBetweenSpins() {
         io.sockets.emit('startSpin', true);
       }, 120);
       setTimeout(function () {
-        ableToBetWheel = false;
         setSpin();
       }, 180);
     }
@@ -161,7 +160,6 @@ function setSpin() {
   const rot = (fullRots * 360) + Math.floor(Math.random() * (rotMax - rotMin + 1) + rotMin);
   rotation = rot;
 
-  console.log("START SPIN");
   spin();
 }
 
@@ -170,19 +168,34 @@ function sendStatusToClient() {
     const response = new BetResponseObject();
     const betResult = BetResultService.getBetStatus(bet.prediction, spinValue, wheelValues, wheelColors);
     response.status = betResult == 0 ? false : true;
-    response.amount = bet.betAmount * betResult;
-    io.to(bet.socketId).emit(response);
+    response.amount = (betResult == 0 ? bet.betAmount : bet.betAmount * betResult);
+    io.to(bet.socketId).emit('betStatus', response);
   });
 }
 
-function getClientStatusToMessage() {
-  wheelBets.forEach(bet => {
+async function getClientStatusToMessage() {
+  wheelBets.forEach(async bet => {
     const betResult = BetResultService.getBetStatus(bet.prediction, spinValue, wheelValues, wheelColors);
-    let newMessage = bet.clientId + ' ';
+    let newMessage = bet.clientNick + ' ';
     newMessage += (betResult == 0 ? 'pralaimėjo' : 'laimėjo') + ' ';
     newMessage += (betResult == 0 ? bet.betAmount : bet.betAmount * betResult);
     wheelMessages.push(newMessage);
+    if (betResult == 0) {
+      await sendClientBetOutcome(bet.betId, false);
+    } else {
+      await sendClientBetOutcome(bet.betId, true);
+    }
+    console.log(bet.betId);
   });
+}
+
+async function setBet(socket, clientBet) {
+  if (clientBet.betAmount && clientBet.prediction) {
+    const betId = await sendClientBet(clientBet.clientId, Math.abs(clientBet.betAmount), BetResultService.getBetCoefficients(clientBet.prediction));
+    const newBet = new BetObject(socket.id, clientBet.clientId, clientBet.clientNick, Math.abs(clientBet.betAmount), clientBet.prediction, betId);
+    console.log(newBet);
+    wheelBets.push(newBet);
+  }
 }
 
 httpServer.listen(port, () => console.log(`listening on port ${port}`));

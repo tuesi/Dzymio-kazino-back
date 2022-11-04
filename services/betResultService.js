@@ -185,4 +185,83 @@ function getBetStatus(betName, resultValue, wheelValues, wheelColors) {
     }
 }
 
-module.exports = { getBetStatus }
+function getBetCoefficients(betName) {
+    switch (betName) {
+        case "colorGreen":
+            return 3;
+        case "colorRed":
+            return 3;
+        case "colorBlue":
+            return 3;
+        case "oneToSix":
+            return 3;
+        case "sevenToTwelve":
+            return 3;
+        case "thirtheenToEighteen":
+            return 3;
+        case "lowerThanNine":
+            return 2;
+        case "moreThanNine":
+            return 2;
+        case "even":
+            return 2;
+        case "odd":
+            return 2;
+        case "one":
+            return 18;
+        case "two":
+            return 18;
+        case "three":
+            return 18;
+        case "four":
+            return 18;
+        case "five":
+            return 18;
+        case "six":
+            return 18;
+        case "seven":
+            return 18;
+        case "eight":
+            return 18;
+        case "nine":
+            return 18;
+        case "ten":
+            return 18;
+        case "eleven":
+            return 18;
+        case "twelve":
+            return 18;
+        case "thirtheen":
+            return 18;
+        case "fourtheen":
+            return 18;
+        case "fiftheen":
+            return 18;
+        case "sixteen":
+            return 18;
+        case "seventeen":
+            return 18;
+        case "eighteen":
+            return 18;
+        case "X":
+            return 18;
+        case "W":
+            return 18;
+        case "evenGreen":
+            return 6;
+        case "evenRed":
+            return 6;
+        case "evenBlue":
+            return 6;
+        case "oddGreen":
+            return 6;
+        case "oddRed":
+            return 6;
+        case "oddBlue":
+            return 6;
+        default:
+            return 0;
+    }
+}
+
+module.exports = { getBetStatus, getBetCoefficients }
