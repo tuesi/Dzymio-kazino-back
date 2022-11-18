@@ -1,4 +1,4 @@
-function getBetStatus(betName, resultValue, wheelValues, wheelColors) {
+function getWheelBetStatus(betName, resultValue, wheelValues, wheelColors) {
     switch (betName) {
         case "colorGreen":
             if (wheelColors[resultValue] == 'žalias') {
@@ -185,7 +185,7 @@ function getBetStatus(betName, resultValue, wheelValues, wheelColors) {
     }
 }
 
-function getBetCoefficients(betName) {
+function getWheelBetCoefficients(betName) {
     switch (betName) {
         case "colorGreen":
             return 3;
@@ -264,4 +264,4 @@ function getBetCoefficients(betName) {
     }
 }
 
-module.exports = { getBetStatus, getBetCoefficients }
+module.exports = { getWheelBetStatus, getWheelBetCoefficients }

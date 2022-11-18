@@ -49,12 +49,12 @@ async function getUserBalance(userId) {
     }
 }
 
-async function sendClientBet(userId, amount, coefficient) {
+async function sendClientBet(userId, amount, coefficient, game) {
     console.log(userId);
     console.log(amount);
     console.log(coefficient);
-    const betBody = { userId: userId, amount: amount, coefficient: coefficient };
-    const betResponse = await fetch("https://dzimyneutron.herokuapp.com/v1/bets", {
+    const betBody = { userId: userId, amount: amount, coefficient: coefficient, game: game };
+    const betResponse = await fetch("https://dzimyneutron.herokuapp.com/v2/betting/static-coefficient", {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${this.token}`,
@@ -62,18 +62,40 @@ async function sendClientBet(userId, amount, coefficient) {
         },
         body: JSON.stringify(betBody)
     });
-    const betId = await betResponse.json();
-
-    return betId.betId;
+    const bet = await betResponse.json();
+    return bet.resourceId;
 }
 
-async function sendClientBetOutcome(betId, outcome) {
-    await fetch('https://dzimyneutron.herokuapp.com/v1/bets/' + betId + '/outcome' + outcome, {
-        method: 'GET',
+async function sendClientBetWitouthCoefficient(userId, amount, game) {
+    const betBody = { userId: userId, amount: amount, game: game };
+    const betResponse = await fetch("https://dzimyneutron.herokuapp.com/v2/betting/dynamic-coefficient", {
+        method: 'POST',
         headers: {
-            Authorization: `Bearer ${this.token}`
-        }
+            Authorization: `Bearer ${this.token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(betBody)
+    });
+    const bet = await betResponse.json();
+    return bet.resourceId;
+}
+
+async function sendClientBetOutcome(betId, outcome, coefficient) {
+    let setBody;
+    if (coefficient) {
+        setBody = { won: outcome, coefficient: coefficient };
+    } else {
+        setBody = { won: outcome };
+    }
+    console.log(betId, outcome);
+    await fetch('https://dzimyneutron.herokuapp.com/v2/betting/bets/' + betId, {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${this.token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(setBody)
     });
 }
 
-module.exports = { getUserNameFromGuild, getApiToken, getUserBalance, sendClientBet, sendClientBetOutcome }
+module.exports = { getUserNameFromGuild, getApiToken, getUserBalance, sendClientBet, sendClientBetOutcome, sendClientBetWitouthCoefficient }
