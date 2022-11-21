@@ -1,16 +1,22 @@
-const BetResponseObject = require('../objects/betResponseObject');
 const BetObject = require('../objects/betObject');
 const { getUserBalance } = require('../services/api');
 const { clientWalletToZeton } = require('../services/calculateClientWallet');
 const { sendClientBet, sendClientBetOutcome, sendClientBetWitouthCoefficient } = require('../services/api');
 const User = require('../database/schemas/User');
 
-async function setClientBetOutcomeAndGetMessage(bet, betStatus) {
+function setClientBetOutcomeMessage(bet, betStatus) {
     let newMessage = bet.clientNick + ' ';
-    newMessage += (betStatus ? 'pralaimėjo' : 'laimėjo') + ' ';
-    newMessage += (betStatus ? bet.betAmount : bet.betAmount * bet.betCoefficient);
-    await sendClientBetOutcome(bet.betId, betStatus);
+    newMessage += (betStatus ? 'laimėjo' : 'pralaimėjo') + ' ';
+    newMessage += (betStatus ? Math.floor(bet.betAmount * bet.betCoefficient) : bet.betAmount);
     return { clientId: bet.clientId, avatar: bet.clientAvatar, message: newMessage };
+}
+
+async function sendClientBetOutome(bet, betStatus) {
+    await sendClientBetOutcome(bet.betId, betStatus);
+}
+
+async function sendClientBetOutomeWithCoefficient(bet, betStatus, coefficient) {
+    await sendClientBetOutcome(bet.betId, betStatus, coefficient);
 }
 
 async function setBet(socketId, clientBet, coefficient, gameName) {
@@ -18,13 +24,12 @@ async function setBet(socketId, clientBet, coefficient, gameName) {
     const userBalance = await getUserBalance(clientBet.clientId);
     const balances = await userBalance.balances;
     const user = await User.findOne({ discordId: clientBet.clientId });
-    console.log(user);
     const userBalanceInZeton = clientWalletToZeton(balances.GOLD, balances.SILVER, balances.COPPER);
-    if (clientBet.betAmount && clientBet.prediction && userBalanceInZeton >= clientBet.betAmount) {
+    if (clientBet.betAmount && userBalanceInZeton >= clientBet.betAmount) {
         let betId;
         if (coefficient == null) {
             betId = await sendClientBetWitouthCoefficient(clientBet.clientId, Math.abs(clientBet.betAmount), gameName);
-        } else {
+        } else if (clientBet.prediction) {
             betId = await sendClientBet(clientBet.clientId, Math.abs(clientBet.betAmount), coefficient, gameName);
         }
         const newBet = new BetObject(socketId, clientBet.clientId, clientBet.clientNick, Math.abs(clientBet.betAmount), clientBet.prediction, coefficient, betId, user.avatar);
@@ -38,4 +43,4 @@ function setBetToMessage(clientBet, messageList) {
     return messageList;
 }
 
-module.exports = { setClientBetOutcomeAndGetMessage, sendBetResultToClient, setBet, setBetToMessage };
+module.exports = { setClientBetOutcomeMessage, setBet, setBetToMessage, sendClientBetOutome, sendClientBetOutomeWithCoefficient };

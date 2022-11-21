@@ -1,4 +1,5 @@
-const { setBet, setBetToMessage, setClientBetOutcomeAndGetMessage } = require('../services/sharedFunctionService');
+const { setBet, setBetToMessage, sendClientBetOutomeWithCoefficient, setClientBetOutcomeMessage } = require('../services/sharedFunctionService');
+const BetResponseObject = require('../objects/betResponseObject');
 
 var io;
 lineRoom = 'line';
@@ -10,19 +11,22 @@ lineClientMessages = [];
 lineBets = [];
 previousLineResults = [];
 
-itemProbability = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 5];
+itemProbability = [];
 
 coeficients = [0, 1, 1.5, 2, 4, 10];
 
+itemProbabilityFactors = [100, 100, 55, 25, 15, 5];
+
 function lineSockets(lineIo) {
     io = lineIo;
+    setUpItemCoefficients();
     timeBetweenSpins();
 }
 
 function lineRoomEvents(socket, eventObject) {
     switch (eventObject.event) {
         case 'getPreviousResults':
-            socket.emit('previousResults', previousLineResults);
+            socket.emit('previousLineResults', previousLineResults);
             break;
         case 'bet':
             if (ableToBet) {
@@ -34,18 +38,25 @@ function lineRoomEvents(socket, eventObject) {
     }
 }
 
+function setUpItemCoefficients() {
+    for (let i = 0; i < itemProbabilityFactors.length; i++) {
+        for (let y = 0; y < itemProbabilityFactors[i]; y++) {
+            itemProbability.push(coeficients[i]);
+        }
+    }
+}
+
 function calculateNumber() {
     let itemList = [];
     for (var i = 0; i < 50; i++) {
         if (i == 41) {
-            let number = itemProbability[(Math.floor(Math.random() * 44))];
+            let number = itemProbability[(Math.floor(Math.random() * itemProbability.length))];
             lineNumber = coeficients[number];
             previousLineResults.push(lineNumber);
             itemList.push(number);
         }
-        itemList.push(itemProbability[(Math.floor(Math.random() * 44))]);
+        itemList.push(itemProbability[(Math.floor(Math.random() * itemProbability.length))]);
     }
-    console.log(itemList[41]);
     io.to(lineRoom).emit('lineSet', itemList);
     setTimeout(() => {
         spin();
@@ -74,10 +85,11 @@ function spin() {
 
 function resetRoom() {
     ableToBet = true;
-    timeBetweenSpins();
     sendBetResultToClient();
     getClientStatusToMessage();
     sendPreviousLineResults();
+    timeBetweenSpins();
+    io.in(lineRoom).emit('newRound', true);
 }
 
 function timeBetweenSpins() {
@@ -101,11 +113,11 @@ function timeBetweenSpins() {
 }
 
 function sendPreviousLineResults() {
-    io.to(lineRoom).emit('previousResults', previousLineResults);
+    io.to(lineRoom).emit('previousLineResults', previousLineResults);
 }
 
 async function setLineBet(socket, clientBet) {
-    let newBet = await setBet(socket.id, clientBet, null, 'multyplier');
+    let newBet = await setBet(socket.id, clientBet, null, 'MULTIPLIER');
     lineBets.push(newBet);
     lineClientMessages = setBetToMessage(newBet, lineClientMessages);
     io.in(lineRoom).emit('clientBetHistory', lineClientMessages);
@@ -120,13 +132,15 @@ function sendBetResultToClient() {
     });
 }
 
-async function getClientStatusToMessage() {
-    lineBets.forEach(async bet => {
+function getClientStatusToMessage() {
+    lineBets.forEach(bet => {
         bet.betCoefficient = lineNumber;
-        let betMessage = setClientBetOutcomeAndGetMessage(bet, lineNumber == 0 ? false : true);
+        sendClientBetOutomeWithCoefficient(bet, lineNumber == 0 ? false : true, lineNumber);
+        let betMessage = setClientBetOutcomeMessage(bet, lineNumber == 0 ? false : true);
         lineClientMessages.push(betMessage);
     });
     io.in(lineRoom).emit('clientBetHistory', lineClientMessages);
+    lineBets = [];
 }
 
 module.exports = { lineSockets, lineRoomEvents };

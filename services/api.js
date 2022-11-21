@@ -53,17 +53,22 @@ async function sendClientBet(userId, amount, coefficient, game) {
     console.log(userId);
     console.log(amount);
     console.log(coefficient);
-    const betBody = { userId: userId, amount: amount, coefficient: coefficient, game: game };
-    const betResponse = await fetch("https://dzimyneutron.herokuapp.com/v2/betting/static-coefficient", {
-        method: 'POST',
-        headers: {
-            Authorization: `Bearer ${this.token}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(betBody)
-    });
-    const bet = await betResponse.json();
-    return bet.resourceId;
+    try {
+        const betBody = { userId: userId, amount: amount, coefficient: coefficient, game: game };
+        const betResponse = await fetch("https://dzimyneutron.herokuapp.com/v2/betting/static-coefficient", {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${this.token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(betBody)
+        });
+        console.log(betResponse);
+        const bet = await betResponse.json();
+        return bet.resourceId;
+    } catch {
+        console.log('error setting bet');
+    }
 }
 
 async function sendClientBetWitouthCoefficient(userId, amount, game) {
@@ -88,7 +93,7 @@ async function sendClientBetOutcome(betId, outcome, coefficient) {
         setBody = { won: outcome };
     }
     console.log(betId, outcome);
-    await fetch('https://dzimyneutron.herokuapp.com/v2/betting/bets/' + betId, {
+    let response = await fetch('https://dzimyneutron.herokuapp.com/v2/betting/bets/' + betId, {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${this.token}`,
@@ -96,6 +101,7 @@ async function sendClientBetOutcome(betId, outcome, coefficient) {
         },
         body: JSON.stringify(setBody)
     });
+    console.log(response);
 }
 
 module.exports = { getUserNameFromGuild, getApiToken, getUserBalance, sendClientBet, sendClientBetOutcome, sendClientBetWitouthCoefficient }

@@ -1,5 +1,6 @@
 const BetResultService = require('../services/betResultService');
-const { setBet, setBetToMessage, setClientBetOutcomeAndGetMessage } = require('../services/sharedFunctionService');
+const { setBet, setBetToMessage, setClientBetOutcomeMessage, sendClientBetOutome } = require('../services/sharedFunctionService');
+const BetResponseObject = require('../objects/betResponseObject');
 
 sliceSize = 360 / 20;
 count = 0;
@@ -29,7 +30,7 @@ function initialWheelRoomEvent(socket) {
 
 function wheelRoomEvents(socket, eventObject) {
     switch (eventObject.event) {
-        case 'getPreviousWheelResult':
+        case 'getPreviousResults':
             socket.emit('previousWheelResults', wheelMessages);
             break;
         case 'bet':
@@ -119,7 +120,6 @@ function resetRoom() {
     sendBetResultToClient();
     getClientStatusToMessage();
     ableToBetWheel = true;
-    wheelBets = [];
     io.in(wheelRoom).emit('previousWheelResults', wheelMessages);
     io.in(wheelRoom).emit('newRound', true);
     timeBetweenSpins();
@@ -135,13 +135,15 @@ function sendBetResultToClient() {
     });
 }
 
-async function getClientStatusToMessage() {
-    wheelBets.forEach(async bet => {
+function getClientStatusToMessage() {
+    wheelBets.forEach(bet => {
         const betResult = BetResultService.getWheelBetStatus(bet.prediction, spinValue, wheelValues, wheelColors);
-        let betMessage = setClientBetOutcomeAndGetMessage(bet, betResult == 0 ? false : true);
+        sendClientBetOutome(bet, betResult == 0 ? false : true);
+        let betMessage = setClientBetOutcomeMessage(bet, betResult == 0 ? false : true);
         wheelClientMessages.push(betMessage);
     });
     io.in(wheelRoom).emit('clientBetHistory', wheelClientMessages);
+    wheelBets = [];
 }
 
 async function setWheelBet(socket, clientBet) {

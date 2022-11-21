@@ -79,13 +79,17 @@ io.on("connection", (socket) => {
   });
 
   socket.on('event', (eventobject) => {
-    if (io.sockets.adapter.rooms.get(wheelRoom) && io.sockets.adapter.rooms.get(wheelRoom).has(socket.id)) {
+    if (io.sockets.adapter.rooms.get(wheelRoom) && io.sockets.adapter.rooms.get(wheelRoom).has(socket.id)
+      && eventobject.room === wheelRoom) {
       wheelRoomEvents(socket, eventobject);
-    } else if (io.sockets.adapter.rooms.get(coinRoom) && io.sockets.adapter.rooms.get(coinRoom).has(socket.id)) {
+    } else if (io.sockets.adapter.rooms.get(coinRoom) && io.sockets.adapter.rooms.get(coinRoom).has(socket.id)
+      && eventobject.room === coinRoom) {
       coinRoomEvents(socket, eventobject);
-    } else if (io.sockets.adapter.rooms.get(lineRoom) && io.sockets.adapter.rooms.get(lineRoom).has(socket.id)) {
+    } else if (io.sockets.adapter.rooms.get(lineRoom) && io.sockets.adapter.rooms.get(lineRoom).has(socket.id)
+      && eventobject.room === lineRoom) {
       lineRoomEvents(socket, eventobject);
-    } else if (io.sockets.adapter.rooms.get(crashRoom) && io.sockets.adapter.rooms.get(crashRoom).has(socket.id)) {
+    } else if (io.sockets.adapter.rooms.get(crashRoom) && io.sockets.adapter.rooms.get(crashRoom).has(socket.id)
+      && eventobject.room === crashRoom) {
       crashRoomEvents(socket, eventobject);
     }
   });

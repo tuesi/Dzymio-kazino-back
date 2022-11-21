@@ -24,7 +24,6 @@ passport.use(new DiscordStrategy({
     scope: ['identify', 'guilds']
 }, async (accessToken, refreshToken, profile, done) => {
     const { id, username, discriminator, avatar, guilds } = profile;
-    console.log(id, username, discriminator, avatar, guilds);
     const userGuildInfo = await getUserNameFromGuild(accessToken);
     const userNick = userGuildInfo.nick;
     try {

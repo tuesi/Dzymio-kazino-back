@@ -1,4 +1,5 @@
-const { setBet, setBetToMessage, setClientBetOutcomeAndGetMessage } = require('../services/sharedFunctionService');
+const { setBet, setBetToMessage, setClientBetOutcomeMessage, sendClientBetOutome } = require('../services/sharedFunctionService');
+const BetResponseObject = require('../objects/betResponseObject');
 
 var io;
 coinRoom = 'coin';
@@ -23,7 +24,7 @@ function initialCoinRoomEvent(socket) {
 
 function coinRoomEvents(socket, eventObject) {
     switch (eventObject.event) {
-        case 'getPreviousCoins':
+        case 'getPreviousResults':
             socket.emit('previousCoins', previousCoins);
             break;
         case 'bet':
@@ -77,7 +78,7 @@ function spin() {
             clearInterval(CoinSpin);
             setTimeout(() => {
                 resetRoom();
-            }, 5000)
+            }, 1000)
         }
     }, 5);
 }
@@ -87,6 +88,7 @@ function resetRoom() {
     coinPositionZ = 1;
     ableToBet = true;
     sendPreviousCoins();
+    io.in(coinRoom).emit('newRound', true);
     sendBetResultToClient();
     getClientStatusToMessage();
     timeBetweenSpins();
@@ -113,7 +115,7 @@ function timeBetweenSpins() {
 }
 
 async function setCoinBet(socket, clientBet) {
-    let newBet = await setBet(socket.id, clientBet, BetResultService.getWheelBetCoefficients(clientBet.prediction), 'COIN');
+    let newBet = await setBet(socket.id, clientBet, 2, 'COIN_FLIP');
     coinBets.push(newBet);
     coinClientMessages = setBetToMessage(newBet, coinClientMessages);
     io.in(coinRoom).emit('clientBetHistory', coinClientMessages);
@@ -122,20 +124,22 @@ async function setCoinBet(socket, clientBet) {
 function sendBetResultToClient() {
     coinBets.forEach(bet => {
         const response = new BetResponseObject();
-        const betResult = bet.prediction == coinSide ? 2 : 0;
+        const betResult = bet.prediction == coinSide.toString() ? 2 : 0;
         response.status = betResult == 0 ? false : true;
         response.amount = (betResult == 0 ? bet.betAmount : bet.betAmount * betResult);
         io.in(bet.socketId).emit('betStatus', response);
     });
 }
 
-async function getClientStatusToMessage() {
-    coinBets.forEach(async bet => {
-        const betResult = bet.prediction == coinSide ? 2 : 0;
-        let betMessage = setClientBetOutcomeAndGetMessage(bet, betResult == 0 ? false : true);
+function getClientStatusToMessage() {
+    coinBets.forEach(bet => {
+        const betResult = bet.prediction == coinSide.toString() ? 2 : 0;
+        sendClientBetOutome(bet, betResult == 0 ? false : true);
+        let betMessage = setClientBetOutcomeMessage(bet, betResult == 0 ? false : true);
         coinClientMessages.push(betMessage);
     });
     io.in(coinRoom).emit('clientBetHistory', coinClientMessages);
+    coinBets = [];
 }
 
 module.exports = { coinSockets, initialCoinRoomEvent, coinRoomEvents };

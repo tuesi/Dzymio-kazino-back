@@ -1,4 +1,5 @@
-const { setBet, setBetToMessage, setClientBetOutcomeAndGetMessage } = require('../services/sharedFunctionService');
+const { setBet, setBetToMessage, setClientBetOutcomeMessage, sendClientBetOutomeWithCoefficient } = require('../services/sharedFunctionService');
+const BetResponseObject = require('../objects/betResponseObject');
 
 var io;
 crashRoom = 'crash';
@@ -11,9 +12,23 @@ previousCrashResults = [];
 crashClientMessages = [];
 crashBets = [];
 
+mainNumberProbability = [];
+mainNumbers = [2, 3, 4, 5, 6, 7, 8, 9, 10];
+//                           2    3    4   5   6   7   8   9  10
+mainNumbersProbabilities = [100, 100, 75, 60, 50, 30, 20, 10, 5];
+
 function crashSockets(crashIo) {
     io = crashIo;
+    setUpNumberProbabilities();
     timeBetweenSpins();
+}
+
+function setUpNumberProbabilities() {
+    for (let i = 0; i < mainNumbersProbabilities.length; i++) {
+        for (let y = 0; y < mainNumbersProbabilities[i]; y++) {
+            mainNumberProbability.push(mainNumbers[i]);
+        }
+    }
 }
 
 function crashRoomEvents(socket, eventObject) {
@@ -30,7 +45,7 @@ function crashRoomEvents(socket, eventObject) {
             break;
         case 'stop':
             if (ableToStop) {
-                stopCrash(socket, crashNumber);
+                getClientToStopCrash(socket, crashNumber);
             }
             break;
     }
@@ -38,8 +53,9 @@ function crashRoomEvents(socket, eventObject) {
 
 function moveCrash() {
     var precision = 100; // 2 decimals
-    var randomnum = Math.floor(Math.random() * (10 * precision - 1 * precision) + 1 * precision) / (1 * precision);
-    console.log(randomnum);
+    var mainNumberIndex = (Math.floor(Math.random() * mainNumberProbability.length));
+    var mainNumber = mainNumberProbability[mainNumberIndex];
+    var randomnum = Math.floor(Math.random() * (mainNumber * precision - 1 * precision) + 1 * precision) / (1 * precision);
     const interval = setInterval(() => {
         if (crashNumber >= randomnum - 0.01) {
             ableToStop = false;
@@ -53,6 +69,7 @@ function moveCrash() {
         } else {
             crashNumber += 0.01;
             io.in(crashRoom).emit('crashValue', crashNumber);
+            checkForCrashStop(crashNumber);
         }
     }, 60)
 }
@@ -89,6 +106,7 @@ function resetRoom() {
     getLostClientStatusToMessage();
     sendPreviousCrashResults();
     timeBetweenSpins();
+    io.in(lineRoom).emit('newRound', true);
 }
 
 function sendPreviousCrashResults() {
@@ -96,27 +114,39 @@ function sendPreviousCrashResults() {
 }
 
 async function setCrashBet(socket, clientBet) {
-    let newBet = await setBet(socket.id, clientBet, null, 'multyplier');
+    let newBet = await setBet(socket.id, clientBet, null, 'CRASH');
     crashBets.push(newBet);
     crashClientMessages = setBetToMessage(newBet, crashClientMessages);
     io.in(crashRoom).emit('clientBetHistory', crashClientMessages);
 }
 
-async function stopCrash(socket, currentCrashNumber) {
-    // find socketId in the crashBets
+function checkForCrashStop(currentCrashNumber) {
+    crashBets.forEach((bet, index) => {
+        console.log(currentCrashNumber.toString() >= bet.prediction);
+        if (currentCrashNumber.toString() >= bet.prediction) {
+            console.log(index);
+            stopCrash(index, currentCrashNumber);
+        }
+    })
+}
+
+function getClientToStopCrash(socket, currentCrashNumber) {
     const clientBetIndex = crashBets.findIndex(bet => bet.socketId === socket.id);
-    if (clientBetIndex !== -1) {
-        // send response to jimmy api with crashNumber
-        crashBets[clientBetIndex].betCoefficient = currentCrashNumber;
-        let betMessage = setClientBetOutcomeAndGetMessage(crashBets[clientBetIndex], true);
-        // add win response to client messages
-        crashClientMessages.push(betMessage);
-        // send win response to client
-        sendBetWinResultToclient(currentCrashNumber);
-        //send win message to room
-        io.in(crashRoom).emit('clientBetHistory', crashClientMessages);
-        crashBets.splice(clientBetIndex, 1);
-    }
+    if (clientBetIndex !== -1) stopCrash(clientBetIndex, currentCrashNumber);
+}
+
+async function stopCrash(index, currentCrashNumber) {
+    // send response to jimmy api with crashNumber
+    crashBets[index].betCoefficient = currentCrashNumber;
+    sendClientBetOutomeWithCoefficient(crashBets[index], true, currentCrashNumber);
+    let betMessage = setClientBetOutcomeMessage(crashBets[index], true);
+    // add win response to client messages
+    crashClientMessages.push(betMessage);
+    // send win response to client
+    sendBetWinResultToclient(crashBets[index], currentCrashNumber);
+    //send win message to room
+    io.in(crashRoom).emit('clientBetHistory', crashClientMessages);
+    crashBets.splice(index, 1);
 
     // remove bet object with current client socket id
     // bets that are left in the crashBets are the people who lost
@@ -124,10 +154,10 @@ async function stopCrash(socket, currentCrashNumber) {
     // add lost messages to clientMessages
 }
 
-function sendBetWinResultToclient(stopCrashNumber) {
+function sendBetWinResultToclient(bet, stopCrashNumber) {
     const response = new BetResponseObject();
     response.status = true;
-    response.amount = bet.betAmount * stopCrashNumber;
+    response.amount = Math.floor(bet.betAmount * stopCrashNumber);
     io.in(bet.socketId).emit('betStatus', response);
 }
 
@@ -140,13 +170,15 @@ function sendBetLostResultToClient() {
     });
 }
 
-async function getLostClientStatusToMessage() {
-    crashBets.forEach(async bet => {
+function getLostClientStatusToMessage() {
+    crashBets.forEach(bet => {
         bet.betCoefficient = 0;
-        let betMessage = setClientBetOutcomeAndGetMessage(bet, false);
+        sendClientBetOutomeWithCoefficient(bet, false, 0);
+        let betMessage = setClientBetOutcomeMessage(bet, false);
         crashClientMessages.push(betMessage);
     });
     io.in(crashRoom).emit('clientBetHistory', crashClientMessages);
+    crashBets = [];
 }
 
 module.exports = { crashSockets, crashRoomEvents };
