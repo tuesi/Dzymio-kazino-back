@@ -7,6 +7,7 @@ crashRoom = 'crash';
 var crashNumber = 1.00;
 var ableToBet = true;
 var ableToStop = true;
+var spinTimer = 0;
 
 previousCrashResults = [];
 crashClientMessages = [];
@@ -21,6 +22,12 @@ function crashSockets(crashIo) {
     io = crashIo;
     setUpNumberProbabilities();
     timeBetweenSpins();
+}
+
+function initialCrashRoomEvent(socket) {
+    socket.emit('timeTillSpin', spinTimer);
+    socket.emit('initialButtonState', ableToBet);
+    socket.emit('clientBetHistory', crashClientMessages);
 }
 
 function setUpNumberProbabilities() {
@@ -75,7 +82,7 @@ function moveCrash() {
 }
 
 function timeBetweenSpins() {
-    let spinTimer = timeTillnextSpin;
+    spinTimer = timeTillnextSpin;
     let spinTime = setInterval(function () {
         io.to(crashRoom).emit('timeTillSpin', spinTimer);
         spinTimer--;
@@ -181,4 +188,4 @@ function getLostClientStatusToMessage() {
     crashBets = [];
 }
 
-module.exports = { crashSockets, crashRoomEvents };
+module.exports = { crashSockets, crashRoomEvents, initialCrashRoomEvent };

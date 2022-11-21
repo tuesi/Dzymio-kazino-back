@@ -11,9 +11,9 @@ const Store = require('connect-mongo');
 const cors = require('cors');
 
 const { wheelSockets, initialWheelRoomEvent, wheelRoomEvents } = require('./Rooms/wheelRoom');
-const { coinSockets, coinRoomEvents } = require('./Rooms/coinRoom');
-const { lineSockets, lineRoomEvents } = require('./Rooms/lineRoom');
-const { crashSockets, crashRoomEvents } = require('./Rooms/crashRoom');
+const { coinSockets, coinRoomEvents, initialCoinRoomEvent } = require('./Rooms/coinRoom');
+const { lineSockets, lineRoomEvents, initialLineRoomEvent } = require('./Rooms/lineRoom');
+const { crashSockets, crashRoomEvents, initialCrashRoomEvent } = require('./Rooms/crashRoom');
 
 
 const io = require('socket.io')(httpServer, {
@@ -65,15 +65,18 @@ io.on("connection", (socket) => {
     } else if (roomName == coinRoom) {
       console.log('joinCoin');
       socket.join(coinRoom);
+      initialCoinRoomEvent(socket);
       //initialCoinRoomEvent(socket);
       //remove socket from room if is in another room
     } else if (roomName == lineRoom) {
       console.log('joinLine');
       socket.join(lineRoom);
+      initialLineRoomEvent(socket);
       //remove socket from room if is in another room
     } else if (roomName == crashRoom) {
       console.log('crashRoom');
       socket.join(crashRoom);
+      initialCrashRoomEvent(socket);
       //remove socket from room if is in another room
     }
   });

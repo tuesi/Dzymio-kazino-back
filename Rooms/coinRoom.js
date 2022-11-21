@@ -12,10 +12,17 @@ previousCoins = [];
 coinBets = [];
 coinClientMessages = [];
 var ableToBet = true;
+var spinTimer = 0;
 
 function coinSockets(coinIo) {
     io = coinIo;
     timeBetweenSpins();
+}
+
+function initialCoinRoomEvent(socket) {
+    socket.emit('timeTillSpin', spinTimer);
+    socket.emit('initialButtonState', ableToBet);
+    socket.emit('clientBetHistory', coinClientMessages);
 }
 
 function initialCoinRoomEvent(socket) {
@@ -95,7 +102,7 @@ function resetRoom() {
 }
 
 function timeBetweenSpins() {
-    let spinTimer = timeTillnextSpin;
+    spinTimer = timeTillnextSpin;
     let spinTime = setInterval(function () {
         io.to(coinRoom).emit('timeTillSpin', spinTimer);
         spinTimer--;
@@ -142,4 +149,4 @@ function getClientStatusToMessage() {
     coinBets = [];
 }
 
-module.exports = { coinSockets, initialCoinRoomEvent, coinRoomEvents };
+module.exports = { coinSockets, initialCoinRoomEvent, coinRoomEvents, initialCoinRoomEvent };

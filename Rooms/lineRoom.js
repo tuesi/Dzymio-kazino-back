@@ -4,8 +4,10 @@ const BetResponseObject = require('../objects/betResponseObject');
 var io;
 lineRoom = 'line';
 lineNumber = 0;
+move = 0;
 
 var ableToBet = true;
+var spinTimer = 0;
 
 lineClientMessages = [];
 lineBets = [];
@@ -21,6 +23,13 @@ function lineSockets(lineIo) {
     io = lineIo;
     setUpItemCoefficients();
     timeBetweenSpins();
+}
+
+function initialLineRoomEvent(socket) {
+    socket.emit('initialLinePos', move);
+    socket.emit('timeTillSpin', spinTimer);
+    socket.emit('initialButtonState', ableToBet);
+    socket.emit('clientBetHistory', lineClientMessages);
 }
 
 function lineRoomEvents(socket, eventObject) {
@@ -64,7 +73,7 @@ function calculateNumber() {
 }
 
 function spin() {
-    let move = 0;
+    move = 0;
     const endPos = Math.floor(Math.random() * 180);
     const interval = setInterval(() => {
         //Dabar vienas yra mazdaug 200
@@ -93,7 +102,7 @@ function resetRoom() {
 }
 
 function timeBetweenSpins() {
-    let spinTimer = timeTillnextSpin;
+    spinTimer = timeTillnextSpin;
     let spinTime = setInterval(function () {
         io.to(lineRoom).emit('timeTillSpin', spinTimer);
         spinTimer--;
@@ -143,4 +152,4 @@ function getClientStatusToMessage() {
     lineBets = [];
 }
 
-module.exports = { lineSockets, lineRoomEvents };
+module.exports = { lineSockets, lineRoomEvents, initialLineRoomEvent };

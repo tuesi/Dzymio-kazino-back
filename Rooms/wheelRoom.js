@@ -12,6 +12,7 @@ wheelMessages = [];
 wheelBets = [];
 wheelClientMessages = [];
 var ableToBetWheel = true;
+var spinTimer = 0;
 
 wheelValues = ['W', '1', '8', '15', '4', '11', '18', '7', '14', '3', 'X', '10', '17', '6', '13', '2', '9', '16', '5', '12'];
 wheelColors = ['violetinis', 'žalias', 'mėlynas', 'raudonas', 'žalias', 'mėlynas', 'raudonas', 'žalias', 'mėlynas', 'raudonas', 'geltonas', 'žalias', 'mėlynas', 'raudonas', 'žalias', 'mėlynas', 'raudonas', 'žalias', 'mėlynas', 'raudonas'];
@@ -26,6 +27,9 @@ function wheelSockets(wheelIo) {
 
 function initialWheelRoomEvent(socket) {
     socket.emit('initialWheelPos', count);
+    socket.emit('timeTillSpin', spinTimer);
+    socket.emit('initialButtonState', ableToBetWheel);
+    socket.emit('clientBetHistory', wheelClientMessages);
 }
 
 function wheelRoomEvents(socket, eventObject) {
@@ -64,7 +68,7 @@ function setSpin() {
 }
 
 function timeBetweenSpins() {
-    let spinTimer = timeTillnextSpin;
+    spinTimer = timeTillnextSpin;
     let spinTime = setInterval(function () {
         io.in(wheelRoom).emit('timeTillSpin', spinTimer);
         spinTimer--;
