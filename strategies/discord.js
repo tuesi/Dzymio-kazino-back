@@ -24,29 +24,44 @@ passport.use(new DiscordStrategy({
     scope: ['identify', 'guilds']
 }, async (accessToken, refreshToken, profile, done) => {
     const { id, username, discriminator, avatar, guilds } = profile;
-    const userGuildInfo = await getUserNameFromGuild(accessToken);
-    const userNick = userGuildInfo.nick;
-    try {
-        const findUser = await User.findOneAndUpdate({ discordId: id }, {
-            discordTag: `${username}#${discriminator}`,
-            avatar: avatar,
-            guildNick: userNick
-        }, { new: true });
-        if (findUser) {
-            console.log('user was found');
-            return done(null, findUser);
-        } else {
-            const newUser = await User.create({
-                discordId: id,
+    var authorized = false;
+    guilds.forEach(async guild => {
+        console.log(guild.id);
+        console.log(process.env.GUILD_ID);
+        if (guild.id == process.env.GUILD_ID) {
+            authorized = true;
+        }
+    });
+
+    if (authorized) {
+        console.log("LOGIN");
+        const userGuildInfo = await getUserNameFromGuild(accessToken);
+        const userNick = userGuildInfo.nick;
+        try {
+            const findUser = await User.findOneAndUpdate({ discordId: id }, {
                 discordTag: `${username}#${discriminator}`,
                 avatar: avatar,
                 guildNick: userNick
-            });
-            return done(null, newUser);
+            }, { new: true });
+            if (findUser) {
+                console.log('user was found');
+                return done(null, findUser);
+            } else {
+                const newUser = await User.create({
+                    discordId: id,
+                    discordTag: `${username}#${discriminator}`,
+                    avatar: avatar,
+                    guildNick: userNick
+                });
+                return done(null, newUser);
+            }
+        } catch (err) {
+            console.log(err);
+            return done(err, null);
         }
-    } catch (err) {
-        console.log(err);
-        return done(err, null);
+    } else {
+        console.log('User not Authorized');
+        return done('User not Authorized', null);
     }
 })
 );

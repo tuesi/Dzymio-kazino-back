@@ -35,9 +35,10 @@ app.use(cors({
 }))
 
 app.use(session({
-  secret: 'secret',
+  secret: process.env.COOKIE,
+  name: 'SausainiukasGuminiukas',
   cookie: {
-    maxAge: 60000 * 60 * 24
+    maxAge: 2592000000 //menesis
   },
   resave: false,
   saveUninitialized: false,
@@ -59,22 +60,26 @@ io.on("connection", (socket) => {
   socket.on('join', roomName => {
     if (roomName == wheelRoom) {
       console.log("join wheel");
+      leaveRoom(socket);
       socket.join(wheelRoom);
       initialWheelRoomEvent(socket);
       //remove socket from room if is in another room
     } else if (roomName == coinRoom) {
       console.log('joinCoin');
+      leaveRoom(socket);
       socket.join(coinRoom);
       initialCoinRoomEvent(socket);
       //initialCoinRoomEvent(socket);
       //remove socket from room if is in another room
     } else if (roomName == lineRoom) {
       console.log('joinLine');
+      leaveRoom(socket);
       socket.join(lineRoom);
       initialLineRoomEvent(socket);
       //remove socket from room if is in another room
     } else if (roomName == crashRoom) {
       console.log('crashRoom');
+      leaveRoom(socket);
       socket.join(crashRoom);
       initialCrashRoomEvent(socket);
       //remove socket from room if is in another room
@@ -102,5 +107,17 @@ io.on("connection", (socket) => {
     //remove socket from room
   });
 });
+
+function leaveRoom(socket) {
+  if (io.sockets.adapter.rooms.get(wheelRoom) && io.sockets.adapter.rooms.get(wheelRoom).has(socket.id)) {
+    socket.leave(wheelRoom);
+  } else if (io.sockets.adapter.rooms.get(coinRoom) && io.sockets.adapter.rooms.get(coinRoom).has(socket.id)) {
+    socket.leave(coinRoom);
+  } else if (io.sockets.adapter.rooms.get(lineRoom) && io.sockets.adapter.rooms.get(lineRoom).has(socket.id)) {
+    socket.leave(lineRoom);
+  } else if (io.sockets.adapter.rooms.get(crashRoom) && io.sockets.adapter.rooms.get(crashRoom).has(socket.id)) {
+    socket.leave(crashRoom);
+  }
+}
 
 httpServer.listen(port, () => console.log(`listening on port ${port}`));

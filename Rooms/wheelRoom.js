@@ -112,7 +112,6 @@ function spin() {
         } else {
             clearInterval(SpinCount);
             endSpin = true;
-            wheelMessages.push(wheelValues[spinValue]);
             setTimeout(() => {
                 resetRoom();
             }, 5000);
@@ -121,6 +120,7 @@ function spin() {
 }
 
 function resetRoom() {
+    wheelMessages.push(wheelValues[spinValue]);
     sendBetResultToClient();
     getClientStatusToMessage();
     ableToBetWheel = true;

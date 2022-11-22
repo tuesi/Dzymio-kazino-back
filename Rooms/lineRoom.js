@@ -5,6 +5,7 @@ var io;
 lineRoom = 'line';
 lineNumber = 0;
 move = 0;
+itemList = [];
 
 var ableToBet = true;
 var spinTimer = 0;
@@ -26,6 +27,7 @@ function lineSockets(lineIo) {
 }
 
 function initialLineRoomEvent(socket) {
+    socket.emit('lineSet', itemList);
     socket.emit('initialLinePos', move);
     socket.emit('timeTillSpin', spinTimer);
     socket.emit('initialButtonState', ableToBet);
@@ -56,12 +58,11 @@ function setUpItemCoefficients() {
 }
 
 function calculateNumber() {
-    let itemList = [];
+    itemList = [];
     for (var i = 0; i < 50; i++) {
         if (i == 41) {
             let number = itemProbability[(Math.floor(Math.random() * itemProbability.length))];
-            lineNumber = coeficients[number];
-            previousLineResults.push(lineNumber);
+            lineNumber = coeficients[coeficients.indexOf(number)];
             itemList.push(number);
         }
         itemList.push(itemProbability[(Math.floor(Math.random() * itemProbability.length))]);
@@ -73,16 +74,15 @@ function calculateNumber() {
 }
 
 function spin() {
-    move = 0;
-    const endPos = Math.floor(Math.random() * 180);
+    move = 85;
+    const endPos = Math.floor(Math.random() * 96);
     const interval = setInterval(() => {
-        //Dabar vienas yra mazdaug 200
-        if (move < (9170 - endPos)) {
-            //9150
-            //8990 nuo 
-            //9170 iki
+        //Dabar vienas yra mazdaug 95
+        if (move < (4360 - endPos)) {
+            //4265 nuo 
+            //4360 iki
             io.in(lineRoom).emit('linePos', move);
-            move += 50;
+            move += 5;
         } else {
             clearInterval(interval);
             setTimeout(() => {
@@ -122,6 +122,7 @@ function timeBetweenSpins() {
 }
 
 function sendPreviousLineResults() {
+    previousLineResults.push(lineNumber);
     io.to(lineRoom).emit('previousLineResults', previousLineResults);
 }
 

@@ -7,11 +7,19 @@ router.get('/discord/redirect', passport.authenticate('discord'), (req, res) => 
 });
 
 router.get('/', (req, res) => {
-    if(req.user) {
+    if (req.user) {
         res.send(req.user);
     } else {
-        res.status(401).send({msg: 'Unauthorized'});
+        res.status(401).send({ msg: 'Unauthorized' });
     }
+});
+
+router.get('/logout', (req, res) => {
+    req.logOut();
+    res.clearCookie('SausainiukasGuminiukas');
+    req.session.destroy(function (err) {
+        res.redirect(process.env.LOGIN_URL);
+    });
 })
 
 module.exports = router;
