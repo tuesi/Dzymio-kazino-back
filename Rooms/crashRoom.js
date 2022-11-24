@@ -1,4 +1,4 @@
-const { setBet, setBetToMessage, setClientBetOutcomeMessage, sendClientBetOutomeWithCoefficient } = require('../services/sharedFunctionService');
+const { setBet, setBetToMessage, setClientBetOutcomeMessage, sendClientBetOutomeWithCoefficient, cleanUpList } = require('../services/sharedFunctionService');
 const BetResponseObject = require('../objects/betResponseObject');
 
 var io;
@@ -13,6 +13,9 @@ previousCrashResults = [];
 crashClientMessages = [];
 crashBets = [];
 
+var currentDaySpin = 1;
+var currentDate = new Date();
+
 mainNumberProbability = [];
 mainNumbers = [2, 3, 4, 5, 6, 7, 8, 9, 10];
 //                           2    3    4   5   6   7   8   9  10
@@ -20,6 +23,7 @@ mainNumbersProbabilities = [100, 100, 75, 60, 50, 30, 20, 10, 5];
 
 function crashSockets(crashIo) {
     io = crashIo;
+    currentDate = new Date().toLocaleDateString("lt");
     setUpNumberProbabilities();
     timeBetweenSpins();
 }
@@ -41,7 +45,7 @@ function setUpNumberProbabilities() {
 function crashRoomEvents(socket, eventObject) {
     switch (eventObject.event) {
         case 'getPreviousResults':
-            socket.emit('previousResults', previousCrashResults);
+            socket.emit('previousCrashResults', previousCrashResults);
             break;
         case 'bet':
             if (ableToBet) {
@@ -71,7 +75,7 @@ function moveCrash() {
                 clearInterval(interval);
                 setTimeout(() => {
                     resetRoom();
-                }, 5000);
+                }, 500);
             }, 60)
         } else {
             crashNumber += 0.01;
@@ -95,9 +99,6 @@ function timeBetweenSpins() {
         if (spinTimer < 0) {
             clearInterval(spinTime);
             setTimeout(function () {
-                io.to(crashRoom).emit('resetCrash', true);
-            }, 120);
-            setTimeout(function () {
                 moveCrash();
             }, 180);
         }
@@ -105,33 +106,52 @@ function timeBetweenSpins() {
 }
 
 function resetRoom() {
-    previousCrashResults.push(crashNumber);
+    io.to(crashRoom).emit('newRound', true);
+    sendPreviousCrashResults();
     crashNumber = 1.00;
     ableToBet = true;
     ableToStop = true;
     sendBetLostResultToClient();
     getLostClientStatusToMessage();
-    sendPreviousCrashResults();
     timeBetweenSpins();
+    currentDaySpinAmount();
     io.in(lineRoom).emit('newRound', true);
 }
 
+function currentDaySpinAmount() {
+    if (currentDate < new Date().toLocaleDateString("lt")) {
+        currentDaySpin = 1;
+    } else {
+        currentDaySpin++;
+    }
+    let currentSpinMessage = { clientId: null, avatar: null, message: currentDaySpin.toString() + " sukimas" };
+    crashClientMessages.push(currentSpinMessage);
+    crashClientMessages = cleanUpList(100, crashClientMessages);
+    io.in(crashRoom).emit('clientBetHistory', crashClientMessages);
+    io.in(crashRoom).emit('currentSpinNo', currentDaySpin);
+}
+
 function sendPreviousCrashResults() {
-    io.to(crashRoom).emit('previousResults', previousCrashResults);
+    previousCrashResults.push(crashNumber.toFixed(2).toString());
+    previousCrashResults = cleanUpList(20, previousCrashResults);
+    io.to(crashRoom).emit('previousCrashResults', previousCrashResults);
 }
 
 async function setCrashBet(socket, clientBet) {
+    if (parseInt(clientBet.prediction) < 1) {
+        clientBet.prediction = 0;
+    }
     let newBet = await setBet(socket.id, clientBet, null, 'CRASH');
     crashBets.push(newBet);
     crashClientMessages = setBetToMessage(newBet, crashClientMessages);
+    crashClientMessages = cleanUpList(100, crashClientMessages);
     io.in(crashRoom).emit('clientBetHistory', crashClientMessages);
 }
 
 function checkForCrashStop(currentCrashNumber) {
     crashBets.forEach((bet, index) => {
-        console.log(currentCrashNumber.toString() >= bet.prediction);
-        if (currentCrashNumber.toString() >= bet.prediction) {
-            console.log(index);
+        if (currentCrashNumber.toString() >= bet.prediction && bet.prediction !== 0) {
+            console.log(bet.prediction);
             stopCrash(index, currentCrashNumber);
         }
     })
@@ -149,6 +169,7 @@ async function stopCrash(index, currentCrashNumber) {
     let betMessage = setClientBetOutcomeMessage(crashBets[index], true);
     // add win response to client messages
     crashClientMessages.push(betMessage);
+    crashClientMessages = cleanUpList(100, crashClientMessages);
     // send win response to client
     sendBetWinResultToclient(crashBets[index], currentCrashNumber);
     //send win message to room
@@ -183,6 +204,7 @@ function getLostClientStatusToMessage() {
         sendClientBetOutomeWithCoefficient(bet, false, 0);
         let betMessage = setClientBetOutcomeMessage(bet, false);
         crashClientMessages.push(betMessage);
+        crashClientMessages = cleanUpList(100, crashClientMessages);
     });
     io.in(crashRoom).emit('clientBetHistory', crashClientMessages);
     crashBets = [];

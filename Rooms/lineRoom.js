@@ -1,4 +1,4 @@
-const { setBet, setBetToMessage, sendClientBetOutomeWithCoefficient, setClientBetOutcomeMessage } = require('../services/sharedFunctionService');
+const { setBet, setBetToMessage, sendClientBetOutomeWithCoefficient, setClientBetOutcomeMessage, cleanUpList } = require('../services/sharedFunctionService');
 const BetResponseObject = require('../objects/betResponseObject');
 
 var io;
@@ -6,6 +6,9 @@ lineRoom = 'line';
 lineNumber = 0;
 move = 0;
 itemList = [];
+
+var currentDaySpin = 1;
+var currentDate = new Date();
 
 var ableToBet = true;
 var spinTimer = 0;
@@ -22,6 +25,7 @@ itemProbabilityFactors = [100, 100, 55, 25, 15, 5];
 
 function lineSockets(lineIo) {
     io = lineIo;
+    currentDate = new Date().toLocaleDateString("lt");
     setUpItemCoefficients();
     timeBetweenSpins();
 }
@@ -98,7 +102,21 @@ function resetRoom() {
     getClientStatusToMessage();
     sendPreviousLineResults();
     timeBetweenSpins();
+    currentDaySpinAmount();
     io.in(lineRoom).emit('newRound', true);
+}
+
+function currentDaySpinAmount() {
+    if (currentDate < new Date().toLocaleDateString("lt")) {
+        currentDaySpin = 1;
+    } else {
+        currentDaySpin++;
+    }
+    let currentSpinMessage = { clientId: null, avatar: null, message: currentDaySpin.toString() + " sukimas" };
+    lineClientMessages.push(currentSpinMessage);
+    lineClientMessages = cleanUpList(100, lineClientMessages);
+    io.in(lineRoom).emit('clientBetHistory', lineClientMessages);
+    io.in(lineRoom).emit('currentSpinNo', currentDaySpin);
 }
 
 function timeBetweenSpins() {
@@ -123,6 +141,7 @@ function timeBetweenSpins() {
 
 function sendPreviousLineResults() {
     previousLineResults.push(lineNumber);
+    previousLineResults = cleanUpList(20, previousLineResults);
     io.to(lineRoom).emit('previousLineResults', previousLineResults);
 }
 
@@ -130,6 +149,7 @@ async function setLineBet(socket, clientBet) {
     let newBet = await setBet(socket.id, clientBet, null, 'MULTIPLIER');
     lineBets.push(newBet);
     lineClientMessages = setBetToMessage(newBet, lineClientMessages);
+    lineClientMessages = cleanUpList(100, lineClientMessages);
     io.in(lineRoom).emit('clientBetHistory', lineClientMessages);
 }
 
@@ -148,6 +168,7 @@ function getClientStatusToMessage() {
         sendClientBetOutomeWithCoefficient(bet, lineNumber == 0 ? false : true, lineNumber);
         let betMessage = setClientBetOutcomeMessage(bet, lineNumber == 0 ? false : true);
         lineClientMessages.push(betMessage);
+        lineClientMessages = cleanUpList(100, lineClientMessages);
     });
     io.in(lineRoom).emit('clientBetHistory', lineClientMessages);
     lineBets = [];

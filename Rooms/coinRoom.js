@@ -1,4 +1,4 @@
-const { setBet, setBetToMessage, setClientBetOutcomeMessage, sendClientBetOutome } = require('../services/sharedFunctionService');
+const { setBet, setBetToMessage, setClientBetOutcomeMessage, sendClientBetOutome, cleanUpList } = require('../services/sharedFunctionService');
 const BetResponseObject = require('../objects/betResponseObject');
 
 var io;
@@ -14,8 +14,12 @@ coinClientMessages = [];
 var ableToBet = true;
 var spinTimer = 0;
 
+var currentDaySpin = 1;
+var currentDate = new Date();
+
 function coinSockets(coinIo) {
     io = coinIo;
+    currentDate = new Date().toLocaleDateString("lt");
     timeBetweenSpins();
 }
 
@@ -51,6 +55,7 @@ function calculateSide() {
 
 function sendPreviousCoins() {
     previousCoins.push(coinSide);
+    previousCoins = cleanUpList(20, previousCoins);
     io.to(coinRoom).emit('previousCoins', previousCoins);
 }
 
@@ -99,6 +104,20 @@ function resetRoom() {
     sendBetResultToClient();
     getClientStatusToMessage();
     timeBetweenSpins();
+    currentDaySpinAmount();
+}
+
+function currentDaySpinAmount() {
+    if (currentDate < new Date().toLocaleDateString("lt")) {
+        currentDaySpin = 1;
+    } else {
+        currentDaySpin++;
+    }
+    let currentSpinMessage = { clientId: null, avatar: null, message: currentDaySpin.toString() + " sukimas" };
+    coinClientMessages.push(currentSpinMessage);
+    coinClientMessages = cleanUpList(100, coinClientMessages);
+    io.in(coinRoom).emit('clientBetHistory', coinClientMessages);
+    io.in(coinRoom).emit('currentSpinNo', currentDaySpin);
 }
 
 function timeBetweenSpins() {
@@ -125,6 +144,7 @@ async function setCoinBet(socket, clientBet) {
     let newBet = await setBet(socket.id, clientBet, 2, 'COIN_FLIP');
     coinBets.push(newBet);
     coinClientMessages = setBetToMessage(newBet, coinClientMessages);
+    coinClientMessages = cleanUpList(100, coinClientMessages);
     io.in(coinRoom).emit('clientBetHistory', coinClientMessages);
 }
 
@@ -144,6 +164,7 @@ function getClientStatusToMessage() {
         sendClientBetOutome(bet, betResult == 0 ? false : true);
         let betMessage = setClientBetOutcomeMessage(bet, betResult == 0 ? false : true);
         coinClientMessages.push(betMessage);
+        coinClientMessages = cleanUpList(100, coinClientMessages);
     });
     io.in(coinRoom).emit('clientBetHistory', coinClientMessages);
     coinBets = [];

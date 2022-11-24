@@ -1,5 +1,5 @@
 const BetResultService = require('../services/betResultService');
-const { setBet, setBetToMessage, setClientBetOutcomeMessage, sendClientBetOutome } = require('../services/sharedFunctionService');
+const { setBet, setBetToMessage, setClientBetOutcomeMessage, sendClientBetOutome, cleanUpList } = require('../services/sharedFunctionService');
 const BetResponseObject = require('../objects/betResponseObject');
 
 sliceSize = 360 / 20;
@@ -8,11 +8,14 @@ rotation = 0;
 endSpin = false;
 timeTillnextSpin = 10;
 spinValue = 0;
-wheelMessages = [];
+previousWheelResults = [];
 wheelBets = [];
 wheelClientMessages = [];
 var ableToBetWheel = true;
 var spinTimer = 0;
+
+var currentDaySpin = 1;
+var currentDate = new Date();
 
 wheelValues = ['W', '1', '8', '15', '4', '11', '18', '7', '14', '3', 'X', '10', '17', '6', '13', '2', '9', '16', '5', '12'];
 wheelColors = ['violetinis', 'žalias', 'mėlynas', 'raudonas', 'žalias', 'mėlynas', 'raudonas', 'žalias', 'mėlynas', 'raudonas', 'geltonas', 'žalias', 'mėlynas', 'raudonas', 'žalias', 'mėlynas', 'raudonas', 'žalias', 'mėlynas', 'raudonas'];
@@ -22,6 +25,7 @@ wheelRoom = 'wheel';
 
 function wheelSockets(wheelIo) {
     io = wheelIo;
+    currentDate = new Date().toLocaleDateString("lt");
     timeBetweenSpins();
 }
 
@@ -35,7 +39,7 @@ function initialWheelRoomEvent(socket) {
 function wheelRoomEvents(socket, eventObject) {
     switch (eventObject.event) {
         case 'getPreviousResults':
-            socket.emit('previousWheelResults', wheelMessages);
+            socket.emit('previousWheelResults', previousWheelResults);
             break;
         case 'bet':
             if (ableToBetWheel) {
@@ -120,13 +124,32 @@ function spin() {
 }
 
 function resetRoom() {
-    wheelMessages.push(wheelValues[spinValue]);
+    sendPreviousWeelResults();
     sendBetResultToClient();
     getClientStatusToMessage();
     ableToBetWheel = true;
-    io.in(wheelRoom).emit('previousWheelResults', wheelMessages);
+    currentDaySpinAmount();
     io.in(wheelRoom).emit('newRound', true);
     timeBetweenSpins();
+}
+
+function currentDaySpinAmount() {
+    if (currentDate < new Date().toLocaleDateString("lt")) {
+        currentDaySpin = 1;
+    } else {
+        currentDaySpin++;
+    }
+    let currentSpinMessage = { clientId: null, avatar: null, message: currentDaySpin.toString() + " sukimas" };
+    wheelClientMessages.push(currentSpinMessage);
+    wheelClientMessages = cleanUpList(100, wheelClientMessages);
+    io.in(wheelRoom).emit('clientBetHistory', wheelClientMessages);
+    io.in(wheelRoom).emit('currentSpinNo', currentDaySpin);
+}
+
+function sendPreviousWeelResults() {
+    previousWheelResults.push(wheelValues[spinValue]);
+    previousWheelResults = cleanUpList(20, previousWheelResults);
+    io.in(wheelRoom).emit('previousWheelResults', previousWheelResults);
 }
 
 function sendBetResultToClient() {
@@ -145,6 +168,7 @@ function getClientStatusToMessage() {
         sendClientBetOutome(bet, betResult == 0 ? false : true);
         let betMessage = setClientBetOutcomeMessage(bet, betResult == 0 ? false : true);
         wheelClientMessages.push(betMessage);
+        wheelClientMessages = cleanUpList(100, wheelClientMessages);
     });
     io.in(wheelRoom).emit('clientBetHistory', wheelClientMessages);
     wheelBets = [];
@@ -154,6 +178,7 @@ async function setWheelBet(socket, clientBet) {
     let newBet = await setBet(socket.id, clientBet, BetResultService.getWheelBetCoefficients(clientBet.prediction), 'WHEEL');
     wheelBets.push(newBet);
     wheelClientMessages = setBetToMessage(newBet, wheelClientMessages);
+    wheelClientMessages = cleanUpList(100, wheelClientMessages);
     io.in(wheelRoom).emit('clientBetHistory', wheelClientMessages);
 }
 

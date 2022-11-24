@@ -43,4 +43,12 @@ function setBetToMessage(clientBet, messageList) {
     return messageList;
 }
 
-module.exports = { setClientBetOutcomeMessage, setBet, setBetToMessage, sendClientBetOutome, sendClientBetOutomeWithCoefficient };
+function cleanUpList(maxAmount, list) {
+    let newList = list;
+    if (newList.length > maxAmount) {
+        newList.shift();
+    }
+    return newList;
+}
+
+module.exports = { setClientBetOutcomeMessage, setBet, setBetToMessage, sendClientBetOutome, sendClientBetOutomeWithCoefficient, cleanUpList };
