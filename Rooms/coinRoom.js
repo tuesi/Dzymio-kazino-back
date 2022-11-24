@@ -27,9 +27,6 @@ function initialCoinRoomEvent(socket) {
     socket.emit('timeTillSpin', spinTimer);
     socket.emit('initialButtonState', ableToBet);
     socket.emit('clientBetHistory', coinClientMessages);
-}
-
-function initialCoinRoomEvent(socket) {
     socket.emit('initialCoinPos', { rotation: coinRotation, positionZ: coinPositionZ });
 }
 
@@ -170,4 +167,4 @@ function getClientStatusToMessage() {
     coinBets = [];
 }
 
-module.exports = { coinSockets, initialCoinRoomEvent, coinRoomEvents, initialCoinRoomEvent };
+module.exports = { coinSockets, initialCoinRoomEvent, coinRoomEvents };
