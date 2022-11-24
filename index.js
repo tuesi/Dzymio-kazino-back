@@ -34,7 +34,7 @@ app.use(cors({
   credentials: true
 }))
 
-app.use(session({
+app.use(expressSession({
   secret: process.env.COOKIE,
   name: 'SausainiukasGuminiukas',
   cookie: {
