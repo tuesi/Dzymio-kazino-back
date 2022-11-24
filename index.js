@@ -41,7 +41,7 @@ app.use(session({
   cookie: {
     sameSite: false,
     httpOnly: false,
-    secure: false,
+    secure: true,
     maxAge: 2592000000 //menesis
   },
   resave: true,
