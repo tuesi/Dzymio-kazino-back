@@ -38,6 +38,7 @@ app.use(expressSession({
   secret: process.env.COOKIE,
   name: 'SausainiukasGuminiukas',
   cookie: {
+    sameSite: false,
     httpOnly: true,
     secure: false,
     maxAge: 2592000000 //menesis
