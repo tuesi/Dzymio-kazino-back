@@ -2,10 +2,12 @@ const { setBet, setBetToMessage, sendClientBetOutomeWithCoefficient, setClientBe
 const BetResponseObject = require('../objects/betResponseObject');
 
 var io;
-lineRoom = 'line';
-lineNumber = 0;
-move = 0;
-itemList = [];
+var lineRoom = 'line';
+var lineNumber = 0;
+var move = 0;
+var itemList = [];
+
+var timeTillnextSpin = process.env.TIMER_IN_SECONDS;
 
 var currentDaySpin = 1;
 var currentDate = new Date();
@@ -13,15 +15,15 @@ var currentDate = new Date();
 var ableToBet = true;
 var spinTimer = 0;
 
-lineClientMessages = [];
-lineBets = [];
-previousLineResults = [];
+var lineClientMessages = [];
+var lineBets = [];
+var previousLineResults = [];
 
-itemProbability = [];
+var itemProbability = [];
 
-coeficients = [0, 1, 1.5, 2, 4, 10];
+var coeficients = [0, 1, 1.5, 2, 4, 10];
 
-itemProbabilityFactors = [100, 100, 55, 25, 15, 5];
+var itemProbabilityFactors = [100, 100, 55, 25, 15, 5];
 
 function lineSockets(lineIo) {
     io = lineIo;

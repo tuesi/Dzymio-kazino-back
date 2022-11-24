@@ -9,17 +9,19 @@ var ableToBet = true;
 var ableToStop = true;
 var spinTimer = 0;
 
-previousCrashResults = [];
-crashClientMessages = [];
-crashBets = [];
+var timeTillnextSpin = process.env.TIMER_IN_SECONDS;
+
+var previousCrashResults = [];
+var crashClientMessages = [];
+var crashBets = [];
 
 var currentDaySpin = 1;
 var currentDate = new Date();
 
-mainNumberProbability = [];
-mainNumbers = [2, 3, 4, 5, 6, 7, 8, 9, 10];
-//                           2    3    4   5   6   7   8   9  10
-mainNumbersProbabilities = [100, 100, 75, 60, 50, 30, 20, 10, 5];
+var mainNumberProbability = [];
+var mainNumbers = [2, 3, 4, 5, 6, 7, 8, 9, 10];
+//                               2    3    4   5   6   7   8   9  10
+var mainNumbersProbabilities = [100, 100, 75, 60, 50, 30, 20, 10, 5];
 
 function crashSockets(crashIo) {
     io = crashIo;

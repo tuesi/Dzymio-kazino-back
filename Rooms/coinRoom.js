@@ -2,17 +2,19 @@ const { setBet, setBetToMessage, setClientBetOutcomeMessage, sendClientBetOutome
 const BetResponseObject = require('../objects/betResponseObject');
 
 var io;
-coinRoom = 'coin';
+var coinRoom = 'coin';
 
-coinRotation = 1.55;
-coinPositionZ = 1;
-coinSide = 1;
-rotationNumber = 15.6;
-previousCoins = [];
-coinBets = [];
-coinClientMessages = [];
+var coinRotation = 1.55;
+var coinPositionZ = 1;
+var coinSide = 1;
+var rotationNumber = 15.6;
+var previousCoins = [];
+var coinBets = [];
+var coinClientMessages = [];
 var ableToBet = true;
 var spinTimer = 0;
+
+var timeTillnextSpin = process.env.TIMER_IN_SECONDS;
 
 var currentDaySpin = 1;
 var currentDate = new Date();

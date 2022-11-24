@@ -2,26 +2,26 @@ const BetResultService = require('../services/betResultService');
 const { setBet, setBetToMessage, setClientBetOutcomeMessage, sendClientBetOutome, cleanUpList } = require('../services/sharedFunctionService');
 const BetResponseObject = require('../objects/betResponseObject');
 
-sliceSize = 360 / 20;
-count = 0;
-rotation = 0;
-endSpin = false;
-timeTillnextSpin = 10;
-spinValue = 0;
-previousWheelResults = [];
-wheelBets = [];
-wheelClientMessages = [];
+var sliceSize = 360 / 20;
+var count = 0;
+var rotation = 0;
+var endSpin = false;
+var timeTillnextSpin = process.env.TIMER_IN_SECONDS;
+var spinValue = 0;
+var previousWheelResults = [];
+var wheelBets = [];
+var wheelClientMessages = [];
 var ableToBetWheel = true;
 var spinTimer = 0;
 
 var currentDaySpin = 1;
 var currentDate = new Date();
 
-wheelValues = ['W', '1', '8', '15', '4', '11', '18', '7', '14', '3', 'X', '10', '17', '6', '13', '2', '9', '16', '5', '12'];
-wheelColors = ['violetinis', 'žalias', 'mėlynas', 'raudonas', 'žalias', 'mėlynas', 'raudonas', 'žalias', 'mėlynas', 'raudonas', 'geltonas', 'žalias', 'mėlynas', 'raudonas', 'žalias', 'mėlynas', 'raudonas', 'žalias', 'mėlynas', 'raudonas'];
+var wheelValues = ['W', '1', '8', '15', '4', '11', '18', '7', '14', '3', 'X', '10', '17', '6', '13', '2', '9', '16', '5', '12'];
+var wheelColors = ['violetinis', 'žalias', 'mėlynas', 'raudonas', 'žalias', 'mėlynas', 'raudonas', 'žalias', 'mėlynas', 'raudonas', 'geltonas', 'žalias', 'mėlynas', 'raudonas', 'žalias', 'mėlynas', 'raudonas', 'žalias', 'mėlynas', 'raudonas'];
 
 var io;
-wheelRoom = 'wheel';
+var wheelRoom = 'wheel';
 
 function wheelSockets(wheelIo) {
     io = wheelIo;
