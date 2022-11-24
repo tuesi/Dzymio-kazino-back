@@ -30,7 +30,7 @@ lineRoom = 'line';
 crashRoom = 'crash';
 
 app.use(cors({
-  origin: ['https://debils.gay/'],
+  origin: ['https://debils.gay'],
   credentials: true
 }))
 
