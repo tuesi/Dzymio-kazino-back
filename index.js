@@ -31,8 +31,9 @@ crashRoom = 'crash';
 
 app.use(cors({
   origin: ['https://debils.gay'],
-  credentials: true
-}))
+  withCredentials: true,
+  credentials: 'include'
+}));
 
 app.use(session({
   secret: process.env.COOKIE,
@@ -46,7 +47,7 @@ app.use(session({
   resave: true,
   saveUninitialized: false,
   store: Store.create({ mongoUrl: process.env.MONGOOSE })
-}))
+}));
 
 app.use(passport.initialize());
 app.use(passport.session());
