@@ -15,9 +15,8 @@ router.get('/', (req, res) => {
 });
 
 router.get('/logout', (req, res) => {
-    req.logOut();
-    res.clearCookie('SausainiukasGuminiukas');
-    req.session.destroy(function (err) {
+    req.logOut(function (err) {
+        res.clearCookie('SausainiukasGuminiukas');
         res.redirect(process.env.LOGIN_URL);
     });
 })
