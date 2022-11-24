@@ -31,7 +31,7 @@ crashRoom = 'crash';
 
 app.use(cors({
   origin: ['https://debils.gay'],
-  credentials: 'include'
+  credentials: true
 }))
 
 app.use(session({
