@@ -44,7 +44,7 @@ app.use(session({
     secure: true,
     maxAge: 2592000000 //menesis
   },
-  resave: true,
+  resave: false,
   saveUninitialized: false,
   store: Store.create({ mongoUrl: process.env.MONGOOSE })
 }));
