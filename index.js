@@ -29,10 +29,11 @@ coinRoom = 'coin';
 lineRoom = 'line';
 crashRoom = 'crash';
 
+app.set("trust proxy", 1);
+
 app.use(cors({
   origin: ['https://debils.gay'],
-  withCredentials: true,
-  credentials: 'include'
+  credentials: true
 }));
 
 app.use(session({
