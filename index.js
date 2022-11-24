@@ -38,12 +38,12 @@ app.use(session({
   secret: process.env.COOKIE,
   name: 'SausainiukasGuminiukas',
   cookie: {
-    sameSite: false,
+    sameSite: "none",
     httpOnly: false,
     secure: false,
     maxAge: 2592000000 //menesis
   },
-  resave: false,
+  resave: true,
   saveUninitialized: false,
   store: Store.create({ mongoUrl: process.env.MONGOOSE })
 }))
