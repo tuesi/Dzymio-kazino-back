@@ -26,8 +26,6 @@ passport.use(new DiscordStrategy({
     const { id, username, discriminator, avatar, guilds } = profile;
     var authorized = false;
     guilds.forEach(async guild => {
-        console.log(guild.id);
-        console.log(process.env.GUILD_ID);
         if (guild.id == process.env.GUILD_ID) {
             authorized = true;
         }
