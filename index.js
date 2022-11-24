@@ -39,7 +39,7 @@ app.use(session({
   secret: process.env.COOKIE,
   name: 'SausainiukasGuminiukas',
   cookie: {
-    sameSite: false,
+    sameSite: 'none',
     httpOnly: false,
     secure: true,
     maxAge: 2592000000 //menesis
