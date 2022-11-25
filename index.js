@@ -40,6 +40,7 @@ app.use(session({
   secret: process.env.COOKIE,
   name: 'SausainiukasGuminiukas',
   cookie: {
+    domain: 'debils.gay',
     sameSite: 'none',
     httpOnly: false,
     secure: true,
