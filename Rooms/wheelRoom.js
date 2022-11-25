@@ -58,8 +58,8 @@ function setSpin() {
     spinValue = spinIndex;
 
     endSpin = false;
-    const rotMin = (this.sliceSize * (spinIndex)) - (this.sliceSize / 5);
-    const rotMax = (this.sliceSize * (spinIndex)) + (this.sliceSize / 5);
+    const rotMin = (sliceSize * (spinIndex)) - (sliceSize / 5);
+    const rotMax = (sliceSize * (spinIndex)) + (sliceSize / 5);
 
     const fullRots = Math.floor(Math.random() * 5) + 5; // minimum 5 rotations max 9
 

@@ -91,7 +91,7 @@ function spin() {
                 resetRoom();
             }, 1000)
         }
-    }, 5);
+    }, 50);
 }
 
 function resetRoom() {
