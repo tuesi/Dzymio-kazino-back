@@ -109,6 +109,7 @@ function resetRoom() {
 function currentDaySpinAmount() {
     if (currentDate < new Date().toLocaleDateString("lt")) {
         currentDaySpin = 1;
+        currentDate = new Date().toLocaleDateString("lt");
     } else {
         currentDaySpin++;
     }
