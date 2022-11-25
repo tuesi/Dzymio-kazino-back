@@ -38,7 +38,6 @@ passport.use(new DiscordStrategy({
     }
 
     if (authorized) {
-        console.log("LOGIN");
         const userGuildInfo = await getUserNameFromGuild(accessToken);
         const userNick = userGuildInfo.nick;
         try {
@@ -64,8 +63,7 @@ passport.use(new DiscordStrategy({
             return done(err, null);
         }
     } else {
-        console.log('User not Authorized');
-        return done('User not Authorized', null);
+        return done(null, false);
     }
 })
 );

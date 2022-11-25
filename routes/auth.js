@@ -2,7 +2,7 @@ const router = require('express').Router();
 const passport = require('passport');
 
 router.get('/discord', passport.authenticate('discord'));
-router.get('/discord/redirect', passport.authenticate('discord'), (req, res) => {
+router.get('/discord/redirect', passport.authenticate('discord', { failureRedirect: process.env.ERROR_URL }), (req, res) => {
     res.redirect(process.env.FRONT_URL);
 });
 
@@ -10,7 +10,7 @@ router.get('/', (req, res) => {
     if (req.user) {
         res.send(req.user);
     } else {
-        res.status(401).send({ msg: 'Unauthorized' });
+        res.redirect(process.env.ERROR_URL);
     }
 });
 

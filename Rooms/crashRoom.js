@@ -154,7 +154,6 @@ async function setCrashBet(socket, clientBet) {
 function checkForCrashStop(currentCrashNumber) {
     crashBets.forEach((bet, index) => {
         if (currentCrashNumber.toString() >= bet.prediction && bet.prediction !== 0) {
-            console.log(bet.prediction);
             stopCrash(index, currentCrashNumber);
         }
     })
