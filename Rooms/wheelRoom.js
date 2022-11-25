@@ -120,7 +120,7 @@ function spin() {
                 resetRoom();
             }, 5000);
         }
-    }, 0);
+    }, 10);
 }
 
 function resetRoom() {
