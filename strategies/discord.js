@@ -1,6 +1,7 @@
 const passport = require('passport');
 const DiscordStrategy = require('passport-discord');
 const User = require('../database/schemas/User');
+const Whitelist = require('../database/schemas/Whitelist');
 const { getUserNameFromGuild } = require('../services/api');
 
 passport.serializeUser((user, done) => {
@@ -25,11 +26,16 @@ passport.use(new DiscordStrategy({
 }, async (accessToken, refreshToken, profile, done) => {
     const { id, username, discriminator, avatar, guilds } = profile;
     var authorized = false;
-    guilds.forEach(async guild => {
-        if (guild.id == process.env.GUILD_ID) {
-            authorized = true;
-        }
-    });
+
+    if (process.env.WHITELIST == 'true') {
+        authorized = await Whitelist.findOne({ discordId: id }) ? true : false;
+    } else {
+        guilds.forEach(async guild => {
+            if (guild.id == process.env.GUILD_ID) {
+                authorized = true;
+            }
+        });
+    }
 
     if (authorized) {
         console.log("LOGIN");
