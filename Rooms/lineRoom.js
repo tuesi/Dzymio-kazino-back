@@ -149,11 +149,13 @@ function sendPreviousLineResults() {
 }
 
 async function setLineBet(socket, clientBet) {
-    let newBet = await setBet(socket.id, clientBet, null, 'MULTIPLIER');
-    lineBets.push(newBet);
-    lineClientMessages = setBetToMessage(newBet, lineClientMessages);
-    lineClientMessages = cleanUpList(100, lineClientMessages);
-    io.in(lineRoom).emit('clientBetHistory', lineClientMessages);
+    if (!lineBets.some(bet => bet.clientId === clientBet.clientId)) {
+        let newBet = await setBet(socket.id, clientBet, null, 'MULTIPLIER');
+        lineBets.push(newBet);
+        lineClientMessages = setBetToMessage(newBet, lineClientMessages);
+        lineClientMessages = cleanUpList(100, lineClientMessages);
+        io.in(lineRoom).emit('clientBetHistory', lineClientMessages);
+    }
 }
 
 function sendBetResultToClient() {

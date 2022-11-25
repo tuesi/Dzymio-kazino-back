@@ -10,7 +10,7 @@ router.get('/', (req, res) => {
     if (req.user) {
         res.send(req.user);
     } else {
-        res.redirect(process.env.ERROR_URL);
+        res.status(401).send({ msg: 'Unauthorized' });
     }
 });
 

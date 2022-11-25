@@ -141,11 +141,13 @@ function timeBetweenSpins() {
 }
 
 async function setCoinBet(socket, clientBet) {
-    let newBet = await setBet(socket.id, clientBet, 2, 'COIN_FLIP');
-    coinBets.push(newBet);
-    coinClientMessages = setBetToMessage(newBet, coinClientMessages);
-    coinClientMessages = cleanUpList(100, coinClientMessages);
-    io.in(coinRoom).emit('clientBetHistory', coinClientMessages);
+    if (!coinBets.some(bet => bet.clientId === clientBet.clientId)) {
+        let newBet = await setBet(socket.id, clientBet, 2, 'COIN_FLIP');
+        coinBets.push(newBet);
+        coinClientMessages = setBetToMessage(newBet, coinClientMessages);
+        coinClientMessages = cleanUpList(100, coinClientMessages);
+        io.in(coinRoom).emit('clientBetHistory', coinClientMessages);
+    }
 }
 
 function sendBetResultToClient() {

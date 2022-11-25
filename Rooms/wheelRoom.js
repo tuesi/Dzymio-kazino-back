@@ -176,11 +176,13 @@ function getClientStatusToMessage() {
 }
 
 async function setWheelBet(socket, clientBet) {
-    let newBet = await setBet(socket.id, clientBet, BetResultService.getWheelBetCoefficients(clientBet.prediction), 'WHEEL');
-    wheelBets.push(newBet);
-    wheelClientMessages = setBetToMessage(newBet, wheelClientMessages);
-    wheelClientMessages = cleanUpList(100, wheelClientMessages);
-    io.in(wheelRoom).emit('clientBetHistory', wheelClientMessages);
+    if (!wheelBets.some(bet => bet.clientId === clientBet.clientId)) {
+        let newBet = await setBet(socket.id, clientBet, BetResultService.getWheelBetCoefficients(clientBet.prediction), 'WHEEL');
+        wheelBets.push(newBet);
+        wheelClientMessages = setBetToMessage(newBet, wheelClientMessages);
+        wheelClientMessages = cleanUpList(100, wheelClientMessages);
+        io.in(wheelRoom).emit('clientBetHistory', wheelClientMessages);
+    }
 }
 
 module.exports = { wheelSockets, initialWheelRoomEvent, wheelRoomEvents };

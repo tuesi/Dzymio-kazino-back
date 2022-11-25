@@ -141,14 +141,16 @@ function sendPreviousCrashResults() {
 }
 
 async function setCrashBet(socket, clientBet) {
-    if (parseInt(clientBet.prediction) < 1) {
-        clientBet.prediction = 0;
+    if (!crashBets.some(bet => bet.clientId === clientBet.clientId)) {
+        if (parseInt(clientBet.prediction) < 1) {
+            clientBet.prediction = 0;
+        }
+        let newBet = await setBet(socket.id, clientBet, null, 'CRASH');
+        crashBets.push(newBet);
+        crashClientMessages = setBetToMessage(newBet, crashClientMessages);
+        crashClientMessages = cleanUpList(100, crashClientMessages);
+        io.in(crashRoom).emit('clientBetHistory', crashClientMessages);
     }
-    let newBet = await setBet(socket.id, clientBet, null, 'CRASH');
-    crashBets.push(newBet);
-    crashClientMessages = setBetToMessage(newBet, crashClientMessages);
-    crashClientMessages = cleanUpList(100, crashClientMessages);
-    io.in(crashRoom).emit('clientBetHistory', crashClientMessages);
 }
 
 function checkForCrashStop(currentCrashNumber) {
