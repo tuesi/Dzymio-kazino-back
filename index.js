@@ -31,6 +31,26 @@ crashRoom = 'crash';
 
 app.set("trust proxy", 1);
 
+//TESTING
+// app.use(cors({
+//   origin: ['http://localhost:4200'],
+//   credentials: true
+// }));
+
+// app.use(session({
+//   secret: process.env.COOKIE,
+//   name: 'SausainiukasGuminiukas',
+//   cookie: {
+//     secure: false,
+//     maxAge: 2592000000 //menesis
+//   },
+//   resave: false,
+//   saveUninitialized: false,
+//   store: Store.create({ mongoUrl: process.env.MONGOOSE })
+// }));
+//TESTING
+
+//PROD
 app.use(cors({
   origin: ['https://debils.gay'],
   credentials: true
@@ -50,6 +70,7 @@ app.use(session({
   saveUninitialized: false,
   store: Store.create({ mongoUrl: process.env.MONGOOSE })
 }));
+//PROD
 
 app.use(passport.initialize());
 app.use(passport.session());

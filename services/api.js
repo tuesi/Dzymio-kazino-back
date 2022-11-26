@@ -24,7 +24,6 @@ async function getApiToken() {
         },
         body: JSON.stringify(loginData)
     });
-    console.log(tokenResponse.status);
     if (tokenResponse.status == 200) {
         const token = await tokenResponse.json();
         this.token = token.token;
@@ -50,9 +49,6 @@ async function getUserBalance(userId) {
 }
 
 async function sendClientBet(userId, amount, coefficient, game) {
-    console.log(userId);
-    console.log(amount);
-    console.log(coefficient);
     try {
         const betBody = { userId: userId, amount: amount, coefficient: coefficient, game: game };
         const betResponse = await fetch("https://dzimyneutron.herokuapp.com/v2/betting/static-coefficient", {
@@ -63,7 +59,6 @@ async function sendClientBet(userId, amount, coefficient, game) {
             },
             body: JSON.stringify(betBody)
         });
-        console.log(betResponse);
         const bet = await betResponse.json();
         return bet.resourceId;
     } catch {
@@ -92,7 +87,6 @@ async function sendClientBetOutcome(betId, outcome, coefficient) {
     } else {
         setBody = { won: outcome };
     }
-    console.log(betId, outcome);
     let response = await fetch('https://dzimyneutron.herokuapp.com/v2/betting/bets/' + betId, {
         method: 'POST',
         headers: {
@@ -101,7 +95,6 @@ async function sendClientBetOutcome(betId, outcome, coefficient) {
         },
         body: JSON.stringify(setBody)
     });
-    console.log(response);
 }
 
 module.exports = { getUserNameFromGuild, getApiToken, getUserBalance, sendClientBet, sendClientBetOutcome, sendClientBetWitouthCoefficient }
