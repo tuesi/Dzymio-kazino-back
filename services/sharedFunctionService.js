@@ -5,10 +5,10 @@ const { sendClientBet, sendClientBetOutcome, sendClientBetWitouthCoefficient } =
 const User = require('../database/schemas/User');
 
 function setClientBetOutcomeMessage(bet, betStatus) {
-    let newMessage = bet.clientNick + ' ';
-    newMessage += (betStatus ? 'laimėjo' : 'pralaimėjo') + ' ';
+    let newMessage = "";
+    newMessage += (betStatus ? ' laimėjo' : ' pralaimėjo') + ' ';
     newMessage += (betStatus ? Math.floor(bet.betAmount * bet.betCoefficient) : bet.betAmount);
-    return { clientId: bet.clientId, avatar: bet.clientAvatar, message: newMessage };
+    return { clientId: bet.clientId, avatar: bet.clientAvatar, username: clientBet.clientNick, message: newMessage };
 }
 
 async function sendClientBetOutome(bet, betStatus) {
