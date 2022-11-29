@@ -40,7 +40,7 @@ async function setBet(socketId, clientBet, coefficient, gameName) {
 function setBetToMessage(clientBet, messageList, prediction) {
     let newMessage = "";
     if (prediction) {
-        newMessage = ' pastatė ' + Math.abs(clientBet.betAmount) + " rezultatui " + prediction;
+        newMessage = ' pastatė ' + Math.abs(clientBet.betAmount) + " spėjimui " + prediction;
     } else {
         newMessage = ' pastatė ' + Math.abs(clientBet.betAmount);
     }
