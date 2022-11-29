@@ -37,8 +37,13 @@ async function setBet(socketId, clientBet, coefficient, gameName) {
     }
 }
 
-function setBetToMessage(clientBet, messageList) {
-    let newMessage = clientBet.clientNick + ' ' + 'pastatė ' + Math.abs(clientBet.betAmount);
+function setBetToMessage(clientBet, messageList, prediction) {
+    let newMessage = "";
+    if (prediction) {
+        newMessage = clientBet.clientNick + ' ' + 'pastatė ' + Math.abs(clientBet.betAmount) + " rezultatui " + prediction;
+    } else {
+        newMessage = clientBet.clientNick + ' ' + 'pastatė ' + Math.abs(clientBet.betAmount);
+    }
     messageList.push({ clientId: clientBet.clientId, avatar: clientBet.clientAvatar, message: newMessage });
     return messageList;
 }

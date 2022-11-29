@@ -43,7 +43,11 @@ async function getUserBalance(userId) {
     if (walletResponse.status == 200) {
         const wallet = walletResponse.json();
         return wallet;
-    } else {
+    } else if (walletResponse.status == 403) {
+        await getApiToken();
+        await getUserBalance();
+    }
+    else {
         console.log(walletResponse);
     }
 }
@@ -59,8 +63,16 @@ async function sendClientBet(userId, amount, coefficient, game) {
             },
             body: JSON.stringify(betBody)
         });
-        const bet = await betResponse.json();
-        return bet.resourceId;
+        if (betResponse.status === 200) {
+            const bet = await betResponse.json();
+            return bet.resourceId;
+        } else if (betResponse.status === 403) {
+            await getApiToken();
+            await sendClientBet(userId, amount, coefficient, game);
+        } else {
+            console.log(betResponse);
+        }
+
     } catch {
         console.log('error setting bet');
     }
@@ -76,8 +88,16 @@ async function sendClientBetWitouthCoefficient(userId, amount, game) {
         },
         body: JSON.stringify(betBody)
     });
-    const bet = await betResponse.json();
-    return bet.resourceId;
+    if (betResponse.status === 200) {
+        const bet = await betResponse.json();
+        return bet.resourceId;
+    } else if (betResponse.status === 403) {
+        await getApiToken();
+        await sendClientBetWitouthCoefficient(userId, amount, game);
+    } else {
+        console.log(betResponse);
+    }
+
 }
 
 async function sendClientBetOutcome(betId, outcome, coefficient) {
@@ -95,6 +115,12 @@ async function sendClientBetOutcome(betId, outcome, coefficient) {
         },
         body: JSON.stringify(setBody)
     });
+    if (response === 403) {
+        await getApiToken();
+        sendClientBetOutcome(betId, outcome, coefficient);
+    } else {
+        console.log(response);
+    }
 }
 
 module.exports = { getUserNameFromGuild, getApiToken, getUserBalance, sendClientBet, sendClientBetOutcome, sendClientBetWitouthCoefficient }

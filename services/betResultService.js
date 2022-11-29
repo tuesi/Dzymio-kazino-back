@@ -264,4 +264,83 @@ function getWheelBetCoefficients(betName) {
     }
 }
 
-module.exports = { getWheelBetStatus, getWheelBetCoefficients }
+function wheelBetToNiceName(betName) {
+    switch (betName) {
+        case "colorGreen":
+            return "žalias";
+        case "colorRed":
+            return "raudonas";
+        case "colorBlue":
+            return "mėlynas";
+        case "oneToSix":
+            return "nuo vieno iki šešių";
+        case "sevenToTwelve":
+            return "nuo septynių iki dvylikos";
+        case "thirtheenToEighteen":
+            return "nuo trylikos iki aštuoniolikos";
+        case "lowerThanNine":
+            return "mažiau už devynis";
+        case "moreThanNine":
+            return "daugiau už devynis";
+        case "even":
+            return "lyginis";
+        case "odd":
+            return "nelyginis";
+        case "one":
+            return "vienas";
+        case "two":
+            return "du";
+        case "three":
+            return "trys";
+        case "four":
+            return "keturi";
+        case "five":
+            return "penki";
+        case "six":
+            return "šeši";
+        case "seven":
+            return "septyni";
+        case "eight":
+            return "aštuoni";
+        case "nine":
+            return "devyni";
+        case "ten":
+            return "dešimt";
+        case "eleven":
+            return "venuolika";
+        case "twelve":
+            return "dvylika";
+        case "thirtheen":
+            return "trylika";
+        case "fourtheen":
+            return "keturiolika";
+        case "fiftheen":
+            return "penkiolika";
+        case "sixteen":
+            return "šešiolika";
+        case "seventeen":
+            return "septiniolika";
+        case "eighteen":
+            return "aštuoniolika";
+        case "X":
+            return "X";
+        case "W":
+            return "W";
+        case "evenGreen":
+            return "lyginis žalias";
+        case "evenRed":
+            return "lyginis raudonas";
+        case "evenBlue":
+            return "lyginis mėlynas";
+        case "oddGreen":
+            return "nelyginis žalias";
+        case "oddRed":
+            return "nelyginis raudonas";
+        case "oddBlue":
+            return "nelyginis mėlynas";
+        default:
+            return 0;
+    }
+}
+
+module.exports = { getWheelBetStatus, getWheelBetCoefficients, wheelBetToNiceName }

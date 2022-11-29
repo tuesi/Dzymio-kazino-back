@@ -81,7 +81,7 @@ function calculateNumber() {
         }
         itemList.push(itemProbability[(Math.floor(Math.random() * itemProbability.length))]);
     }
-    io.to(lineRoom).emit('lineSet', itemList);
+    if (checkIfThereIsPeopleInRoom()) io.to(lineRoom).emit('lineSet', itemList);
     setTimeout(() => {
         spin();
     }, 50);
@@ -95,7 +95,7 @@ function spin() {
         if (move < (4360 - endPos)) {
             //4265 nuo 
             //4360 iki
-            io.in(lineRoom).emit('linePos', move);
+            if (checkIfThereIsPeopleInRoom()) io.in(lineRoom).emit('linePos', move);
             move += 5;
         } else {
             clearInterval(interval);
@@ -113,7 +113,7 @@ function resetRoom() {
     sendPreviousLineResults();
     timeBetweenSpins();
     currentDaySpinAmount();
-    io.in(lineRoom).emit('newRound', true);
+    if (checkIfThereIsPeopleInRoom()) io.in(lineRoom).emit('newRound', true);
 }
 
 function currentDaySpinAmount() {
@@ -126,19 +126,19 @@ function currentDaySpinAmount() {
     let currentSpinMessage = { clientId: null, avatar: null, message: currentDaySpin.toString() + " sukimas" };
     lineClientMessages.push(currentSpinMessage);
     lineClientMessages = cleanUpList(100, lineClientMessages);
-    io.in(lineRoom).emit('clientBetHistory', lineClientMessages);
-    io.in(lineRoom).emit('currentSpinNo', currentDaySpin);
+    if (checkIfThereIsPeopleInRoom()) io.in(lineRoom).emit('clientBetHistory', lineClientMessages);
+    if (checkIfThereIsPeopleInRoom()) io.in(lineRoom).emit('currentSpinNo', currentDaySpin);
 }
 
 function timeBetweenSpins() {
     spinTimer = timeTillnextSpin;
     let spinTime = setInterval(function () {
-        io.to(lineRoom).emit('timeTillSpin', spinTimer);
+        if (checkIfThereIsPeopleInRoom()) io.to(lineRoom).emit('timeTillSpin', spinTimer);
         spinTimer--;
 
         if (spinTimer < 5) {
             ableToBet = false;
-            io.to(lineRoom).emit('betTimeEnd', true);
+            if (checkIfThereIsPeopleInRoom()) io.to(lineRoom).emit('betTimeEnd', true);
         }
 
         if (spinTimer < 0) {
@@ -153,7 +153,7 @@ function timeBetweenSpins() {
 function sendPreviousLineResults() {
     previousLineResults.push(lineNumber);
     previousLineResults = cleanUpList(20, previousLineResults);
-    io.to(lineRoom).emit('previousLineResults', previousLineResults);
+    if (checkIfThereIsPeopleInRoom()) io.to(lineRoom).emit('previousLineResults', previousLineResults);
 }
 
 async function setLineBet(socket, clientBet) {
@@ -162,7 +162,7 @@ async function setLineBet(socket, clientBet) {
         lineBets.push(newBet);
         lineClientMessages = setBetToMessage(newBet, lineClientMessages);
         lineClientMessages = cleanUpList(100, lineClientMessages);
-        io.in(lineRoom).emit('clientBetHistory', lineClientMessages);
+        if (checkIfThereIsPeopleInRoom()) io.in(lineRoom).emit('clientBetHistory', lineClientMessages);
     }
 }
 
@@ -183,7 +183,7 @@ function getClientStatusToMessage() {
         lineClientMessages.push(betMessage);
         lineClientMessages = cleanUpList(100, lineClientMessages);
     });
-    io.in(lineRoom).emit('clientBetHistory', lineClientMessages);
+    if (checkIfThereIsPeopleInRoom()) io.in(lineRoom).emit('clientBetHistory', lineClientMessages);
     lineBets = [];
 }
 

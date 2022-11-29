@@ -36,6 +36,14 @@ function initialCrashRoomEvent(socket) {
     socket.emit('clientBetHistory', crashClientMessages);
 }
 
+function checkIfThereIsPeopleInRoom() {
+    if (io.sockets.adapter.rooms.get(crashRoom)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 function setUpNumberProbabilities() {
     for (let i = 0; i < mainNumbersProbabilities.length; i++) {
         for (let y = 0; y < mainNumbersProbabilities[i]; y++) {
@@ -81,7 +89,7 @@ function moveCrash() {
             }, 60)
         } else {
             crashNumber += 0.01;
-            io.in(crashRoom).emit('crashValue', crashNumber);
+            if (checkIfThereIsPeopleInRoom()) io.in(crashRoom).emit('crashValue', crashNumber);
             checkForCrashStop(crashNumber);
         }
     }, 60)
@@ -90,12 +98,12 @@ function moveCrash() {
 function timeBetweenSpins() {
     spinTimer = timeTillnextSpin;
     let spinTime = setInterval(function () {
-        io.to(crashRoom).emit('timeTillSpin', spinTimer);
+        if (checkIfThereIsPeopleInRoom()) io.to(crashRoom).emit('timeTillSpin', spinTimer);
         spinTimer--;
 
         if (spinTimer < 5) {
             ableToBet = false;
-            io.to(crashRoom).emit('betTimeEnd', true);
+            if (checkIfThereIsPeopleInRoom()) io.to(crashRoom).emit('betTimeEnd', true);
         }
 
         if (spinTimer < 0) {
@@ -108,7 +116,7 @@ function timeBetweenSpins() {
 }
 
 function resetRoom() {
-    io.to(crashRoom).emit('newRound', true);
+    if (checkIfThereIsPeopleInRoom()) io.to(crashRoom).emit('newRound', true);
     sendPreviousCrashResults();
     crashNumber = 1.00;
     ableToBet = true;
@@ -117,7 +125,7 @@ function resetRoom() {
     getLostClientStatusToMessage();
     timeBetweenSpins();
     currentDaySpinAmount();
-    io.in(lineRoom).emit('newRound', true);
+    if (checkIfThereIsPeopleInRoom()) io.in(lineRoom).emit('newRound', true);
 }
 
 function currentDaySpinAmount() {
@@ -130,14 +138,14 @@ function currentDaySpinAmount() {
     let currentSpinMessage = { clientId: null, avatar: null, message: currentDaySpin.toString() + " sukimas" };
     crashClientMessages.push(currentSpinMessage);
     crashClientMessages = cleanUpList(100, crashClientMessages);
-    io.in(crashRoom).emit('clientBetHistory', crashClientMessages);
-    io.in(crashRoom).emit('currentSpinNo', currentDaySpin);
+    if (checkIfThereIsPeopleInRoom()) io.in(crashRoom).emit('clientBetHistory', crashClientMessages);
+    if (checkIfThereIsPeopleInRoom()) io.in(crashRoom).emit('currentSpinNo', currentDaySpin);
 }
 
 function sendPreviousCrashResults() {
     previousCrashResults.push(crashNumber.toFixed(2).toString());
     previousCrashResults = cleanUpList(20, previousCrashResults);
-    io.to(crashRoom).emit('previousCrashResults', previousCrashResults);
+    if (checkIfThereIsPeopleInRoom()) io.to(crashRoom).emit('previousCrashResults', previousCrashResults);
 }
 
 async function setCrashBet(socket, clientBet) {
@@ -147,9 +155,9 @@ async function setCrashBet(socket, clientBet) {
         }
         let newBet = await setBet(socket.id, clientBet, null, 'CRASH');
         crashBets.push(newBet);
-        crashClientMessages = setBetToMessage(newBet, crashClientMessages);
+        crashClientMessages = setBetToMessage(newBet, crashClientMessages, parseInt(clientBet.prediction) > 1 ? "clientBet.prediction" : null);
         crashClientMessages = cleanUpList(100, crashClientMessages);
-        io.in(crashRoom).emit('clientBetHistory', crashClientMessages);
+        if (checkIfThereIsPeopleInRoom()) io.in(crashRoom).emit('clientBetHistory', crashClientMessages);
     }
 }
 
@@ -177,7 +185,7 @@ async function stopCrash(index, currentCrashNumber) {
     // send win response to client
     sendBetWinResultToclient(crashBets[index], currentCrashNumber);
     //send win message to room
-    io.in(crashRoom).emit('clientBetHistory', crashClientMessages);
+    if (checkIfThereIsPeopleInRoom()) io.in(crashRoom).emit('clientBetHistory', crashClientMessages);
     crashBets.splice(index, 1);
 
     // remove bet object with current client socket id
@@ -210,7 +218,7 @@ function getLostClientStatusToMessage() {
         crashClientMessages.push(betMessage);
         crashClientMessages = cleanUpList(100, crashClientMessages);
     });
-    io.in(crashRoom).emit('clientBetHistory', crashClientMessages);
+    if (checkIfThereIsPeopleInRoom()) io.in(crashRoom).emit('clientBetHistory', crashClientMessages);
     crashBets = [];
 }
 

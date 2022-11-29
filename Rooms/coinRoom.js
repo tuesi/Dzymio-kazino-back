@@ -32,6 +32,14 @@ function initialCoinRoomEvent(socket) {
     socket.emit('initialCoinPos', { rotation: coinRotation, positionZ: coinPositionZ });
 }
 
+function checkIfThereIsPeopleInRoom() {
+    if (io.sockets.adapter.rooms.get(coinRoom)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 function coinRoomEvents(socket, eventObject) {
     switch (eventObject.event) {
         case 'getPreviousResults':
@@ -55,7 +63,7 @@ function calculateSide() {
 function sendPreviousCoins() {
     previousCoins.push(coinSide);
     previousCoins = cleanUpList(20, previousCoins);
-    io.to(coinRoom).emit('previousCoins', previousCoins);
+    if (checkIfThereIsPeopleInRoom()) io.to(coinRoom).emit('previousCoins', previousCoins);
 }
 
 function setRotationNumber() {
@@ -69,7 +77,7 @@ function setRotationNumber() {
 
 function spin() {
     let CoinSpin = setInterval(() => {
-        io.to(coinRoom).emit('coinPos', { rotation: coinRotation, positionZ: coinPositionZ });
+        if (checkIfThereIsPeopleInRoom()) io.to(coinRoom).emit('coinPos', { rotation: coinRotation, positionZ: coinPositionZ });
         coinRotation += 0.1;
         if (coinPositionZ < 100 && coinRotation < rotationNumber) {
             coinPositionZ += 0.5;
@@ -79,11 +87,11 @@ function spin() {
 
         if (coinPositionZ <= 1) {
             if (coinSide == 1) {
-                io.to(coinRoom).emit('coinPos', { rotation: 1.55, positionZ: 1 });
-                io.to(coinRoom).emit('endPos', { pos: 1.55 });
+                if (checkIfThereIsPeopleInRoom()) io.to(coinRoom).emit('coinPos', { rotation: 1.55, positionZ: 1 });
+                if (checkIfThereIsPeopleInRoom()) io.to(coinRoom).emit('endPos', { pos: 1.55 });
             } else {
-                io.to(coinRoom).emit('coinPos', { rotation: 4.7, positionZ: 1 });
-                io.to(coinRoom).emit('endPos', { pos: 4.7 });
+                if (checkIfThereIsPeopleInRoom()) io.to(coinRoom).emit('coinPos', { rotation: 4.7, positionZ: 1 });
+                if (checkIfThereIsPeopleInRoom()) io.to(coinRoom).emit('endPos', { pos: 4.7 });
             }
 
             clearInterval(CoinSpin);
@@ -99,7 +107,7 @@ function resetRoom() {
     coinPositionZ = 1;
     ableToBet = true;
     sendPreviousCoins();
-    io.in(coinRoom).emit('newRound', true);
+    if (checkIfThereIsPeopleInRoom()) io.in(coinRoom).emit('newRound', true);
     sendBetResultToClient();
     getClientStatusToMessage();
     timeBetweenSpins();
@@ -116,19 +124,19 @@ function currentDaySpinAmount() {
     let currentSpinMessage = { clientId: null, avatar: null, message: currentDaySpin.toString() + " sukimas" };
     coinClientMessages.push(currentSpinMessage);
     coinClientMessages = cleanUpList(100, coinClientMessages);
-    io.in(coinRoom).emit('clientBetHistory', coinClientMessages);
-    io.in(coinRoom).emit('currentSpinNo', currentDaySpin);
+    if (checkIfThereIsPeopleInRoom()) io.in(coinRoom).emit('clientBetHistory', coinClientMessages);
+    if (checkIfThereIsPeopleInRoom()) io.in(coinRoom).emit('currentSpinNo', currentDaySpin);
 }
 
 function timeBetweenSpins() {
     spinTimer = timeTillnextSpin;
     let spinTime = setInterval(function () {
-        io.to(coinRoom).emit('timeTillSpin', spinTimer);
+        if (checkIfThereIsPeopleInRoom()) io.to(coinRoom).emit('timeTillSpin', spinTimer);
         spinTimer--;
 
         if (spinTimer < 5) {
             ableToBet = false;
-            io.to(coinRoom).emit('betTimeEnd', true);
+            if (checkIfThereIsPeopleInRoom()) io.to(coinRoom).emit('betTimeEnd', true);
         }
 
         if (spinTimer < 0) {
@@ -144,9 +152,9 @@ async function setCoinBet(socket, clientBet) {
     if (!coinBets.some(bet => bet.clientId === clientBet.clientId)) {
         let newBet = await setBet(socket.id, clientBet, 2, 'COIN_FLIP');
         coinBets.push(newBet);
-        coinClientMessages = setBetToMessage(newBet, coinClientMessages);
+        coinClientMessages = setBetToMessage(newBet, coinClientMessages, newBet.prediction === 0 ? "Jimmy" : "Nooo");
         coinClientMessages = cleanUpList(100, coinClientMessages);
-        io.in(coinRoom).emit('clientBetHistory', coinClientMessages);
+        if (checkIfThereIsPeopleInRoom()) io.in(coinRoom).emit('clientBetHistory', coinClientMessages);
     }
 }
 
@@ -168,7 +176,7 @@ function getClientStatusToMessage() {
         coinClientMessages.push(betMessage);
         coinClientMessages = cleanUpList(100, coinClientMessages);
     });
-    io.in(coinRoom).emit('clientBetHistory', coinClientMessages);
+    if (checkIfThereIsPeopleInRoom()) io.in(coinRoom).emit('clientBetHistory', coinClientMessages);
     coinBets = [];
 }
 
