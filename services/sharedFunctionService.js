@@ -8,7 +8,7 @@ function setClientBetOutcomeMessage(bet, betStatus) {
     let newMessage = "";
     newMessage += (betStatus ? ' laimėjo' : ' pralaimėjo') + ' ';
     newMessage += (betStatus ? Math.floor(bet.betAmount * bet.betCoefficient) : bet.betAmount);
-    return { clientId: bet.clientId, avatar: bet.clientAvatar, username: clientBet.clientNick, message: newMessage };
+    return { clientId: bet.clientId, avatar: bet.clientAvatar, username: bet.clientNick, message: newMessage };
 }
 
 async function sendClientBetOutome(bet, betStatus) {
