@@ -40,6 +40,14 @@ function initialLineRoomEvent(socket) {
     socket.emit('clientBetHistory', lineClientMessages);
 }
 
+function checkIfThereIsPeopleInRoom() {
+    if (io.sockets.adapter.rooms.get(lineRoom)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 function lineRoomEvents(socket, eventObject) {
     switch (eventObject.event) {
         case 'getPreviousResults':

@@ -36,6 +36,14 @@ function initialWheelRoomEvent(socket) {
     socket.emit('clientBetHistory', wheelClientMessages);
 }
 
+function checkIfThereIsPeopleInRoom() {
+    if (io.sockets.adapter.rooms.get(wheelRoom)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 function wheelRoomEvents(socket, eventObject) {
     switch (eventObject.event) {
         case 'getPreviousResults':
@@ -74,22 +82,22 @@ function setSpin() {
 function timeBetweenSpins() {
     spinTimer = timeTillnextSpin;
     let spinTime = setInterval(function () {
-        io.in(wheelRoom).emit('timeTillSpin', spinTimer);
+        if (checkIfThereIsPeopleInRoom()) io.in(wheelRoom).emit('timeTillSpin', spinTimer);
         spinTimer--;
 
         if (spinTimer < 5) {
             ableToBetWheel = false;
-            io.in(wheelRoom).emit('betTimeEnd', true);
+            if (checkIfThereIsPeopleInRoom()) io.in(wheelRoom).emit('betTimeEnd', true);
         }
 
         if (spinTimer < 0) {
             clearInterval(spinTime);
-            io.in(wheelRoom).emit('resetWheel', true);
+            if (checkIfThereIsPeopleInRoom()) io.in(wheelRoom).emit('resetWheel', true);
             setTimeout(function () {
-                io.in(wheelRoom).emit('initialWheelPos', 0);
+                if (checkIfThereIsPeopleInRoom()) io.in(wheelRoom).emit('initialWheelPos', 0);
             }, 60);
             setTimeout(function () {
-                io.in(wheelRoom).emit('startSpin', true);
+                if (checkIfThereIsPeopleInRoom()) io.in(wheelRoom).emit('startSpin', true);
             }, 120);
             setTimeout(function () {
                 setSpin();
@@ -100,7 +108,7 @@ function timeBetweenSpins() {
 
 function spin() {
     let WheelSpin = setInterval(function () {
-        io.in(wheelRoom).emit('wheelPos', count);
+        if (checkIfThereIsPeopleInRoom()) io.in(wheelRoom).emit('wheelPos', count);
         if (endSpin) {
             clearInterval(WheelSpin);
         }
@@ -129,7 +137,7 @@ function resetRoom() {
     getClientStatusToMessage();
     ableToBetWheel = true;
     currentDaySpinAmount();
-    io.in(wheelRoom).emit('newRound', true);
+    if (checkIfThereIsPeopleInRoom()) io.in(wheelRoom).emit('newRound', true);
     timeBetweenSpins();
 }
 
@@ -143,14 +151,14 @@ function currentDaySpinAmount() {
     let currentSpinMessage = { clientId: null, avatar: null, message: currentDaySpin.toString() + " sukimas" };
     wheelClientMessages.push(currentSpinMessage);
     wheelClientMessages = cleanUpList(100, wheelClientMessages);
-    io.in(wheelRoom).emit('clientBetHistory', wheelClientMessages);
-    io.in(wheelRoom).emit('currentSpinNo', currentDaySpin);
+    if (checkIfThereIsPeopleInRoom()) io.in(wheelRoom).emit('clientBetHistory', wheelClientMessages);
+    if (checkIfThereIsPeopleInRoom()) io.in(wheelRoom).emit('currentSpinNo', currentDaySpin);
 }
 
 function sendPreviousWeelResults() {
     previousWheelResults.push(wheelValues[spinValue]);
     previousWheelResults = cleanUpList(20, previousWheelResults);
-    io.in(wheelRoom).emit('previousWheelResults', previousWheelResults);
+    if (checkIfThereIsPeopleInRoom()) io.in(wheelRoom).emit('previousWheelResults', previousWheelResults);
 }
 
 function sendBetResultToClient() {
@@ -171,7 +179,7 @@ function getClientStatusToMessage() {
         wheelClientMessages.push(betMessage);
         wheelClientMessages = cleanUpList(100, wheelClientMessages);
     });
-    io.in(wheelRoom).emit('clientBetHistory', wheelClientMessages);
+    if (checkIfThereIsPeopleInRoom()) io.in(wheelRoom).emit('clientBetHistory', wheelClientMessages);
     wheelBets = [];
 }
 
@@ -181,7 +189,7 @@ async function setWheelBet(socket, clientBet) {
         wheelBets.push(newBet);
         wheelClientMessages = setBetToMessage(newBet, wheelClientMessages);
         wheelClientMessages = cleanUpList(100, wheelClientMessages);
-        io.in(wheelRoom).emit('clientBetHistory', wheelClientMessages);
+        if (checkIfThereIsPeopleInRoom()) io.in(wheelRoom).emit('clientBetHistory', wheelClientMessages);
     }
 }
 
