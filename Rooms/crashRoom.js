@@ -77,9 +77,9 @@ function moveCrash() {
     var precision = 100; // 2 decimals
     var mainNumberIndex = (Math.floor(Math.random() * mainNumberProbability.length));
     var mainNumber = mainNumberProbability[mainNumberIndex];
-    var randomnum = 1.00;
+    var randomnum = 1.02;
     if (mainNumber === 1) {
-        randomnum = 1.01;
+        randomnum = 1.02;
     } else {
         randomnum = Math.floor(Math.random() * (mainNumber * precision - 1 * precision) + 1 * precision) / (1 * precision);
     }
