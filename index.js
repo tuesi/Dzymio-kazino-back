@@ -15,10 +15,17 @@ const { coinSockets, coinRoomEvents, initialCoinRoomEvent } = require('./Rooms/c
 const { lineSockets, lineRoomEvents, initialLineRoomEvent } = require('./Rooms/lineRoom');
 const { crashSockets, crashRoomEvents, initialCrashRoomEvent } = require('./Rooms/crashRoom');
 
+//TEST
+// const io = require('socket.io')(httpServer, {
+//   cors: { origins: 'http://localhost:4200' }
+// });
+//TEST
 
+//PROD
 const io = require('socket.io')(httpServer, {
-  cors: { origins: '*' }
+  cors: { origins: 'https://debils.gay' }
 });
+//PROD
 
 mongoose.connect(process.env.MONGOOSE);
 

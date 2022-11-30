@@ -67,10 +67,11 @@ function sendPreviousCoins() {
 }
 
 function setRotationNumber() {
+    coinSide = 1;
     if (coinSide == 1) {
-        rotationNumber = 17.2;
+        rotationNumber = 17.1;
     } else {
-        rotationNumber = 15.6;
+        rotationNumber = 14.1;
     }
     spin();
 }
@@ -79,7 +80,7 @@ function spin() {
     let CoinSpin = setInterval(() => {
         if (checkIfThereIsPeopleInRoom()) io.to(coinRoom).emit('coinPos', { rotation: coinRotation, positionZ: coinPositionZ });
         coinRotation += 0.1;
-        if (coinPositionZ < 100 && coinRotation < rotationNumber) {
+        if (coinPositionZ < 50 && coinRotation < rotationNumber) {
             coinPositionZ += 0.5;
         } else if (coinPositionZ > 1) {
             coinPositionZ -= 0.5;
@@ -152,7 +153,7 @@ async function setCoinBet(socket, clientBet) {
     if (!coinBets.some(bet => bet.clientId === clientBet.clientId)) {
         let newBet = await setBet(socket.id, clientBet, 2, 'COIN_FLIP');
         coinBets.push(newBet);
-        coinClientMessages = setBetToMessage(newBet, coinClientMessages, newBet.prediction === 0 ? "Jimmy" : "Nooo");
+        coinClientMessages = setBetToMessage(newBet, coinClientMessages, newBet.prediction === 1 ? "Jimmy" : "Nooo");
         coinClientMessages = cleanUpList(100, coinClientMessages);
         if (checkIfThereIsPeopleInRoom()) io.in(coinRoom).emit('clientBetHistory', coinClientMessages);
     }
