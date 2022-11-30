@@ -19,9 +19,10 @@ var currentDaySpin = 1;
 var currentDate = new Date();
 
 var mainNumberProbability = [];
-var mainNumbers = [2, 3, 4, 5, 6, 7, 8, 9, 10];
-//                               2    3    4   5   6   7   8   9  10
-var mainNumbersProbabilities = [300, 200, 75, 60, 50, 30, 20, 10, 5];
+var mainNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+//                               1     2    3    4   5   6   7   8   9  10
+var mainNumbersProbabilities = [100, 300, 200, 75, 60, 50, 30, 20, 10, 5];
+//1 is insta crash at 1.01x
 
 function crashSockets(crashIo) {
     io = crashIo;
@@ -76,7 +77,11 @@ function moveCrash() {
     var precision = 100; // 2 decimals
     var mainNumberIndex = (Math.floor(Math.random() * mainNumberProbability.length));
     var mainNumber = mainNumberProbability[mainNumberIndex];
-    var randomnum = Math.floor(Math.random() * (mainNumber * precision - 1 * precision) + 1 * precision) / (1 * precision);
+    var randomnum = 1.00;
+    if (mainNumber === 1) {
+        randomnum = 1.01;
+    }
+    randomnum = Math.floor(Math.random() * (mainNumber * precision - 1 * precision) + 1 * precision) / (1 * precision);
     const interval = setInterval(() => {
         if (crashNumber >= randomnum - 0.01) {
             ableToStop = false;
