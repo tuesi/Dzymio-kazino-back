@@ -80,8 +80,9 @@ function moveCrash() {
     var randomnum = 1.00;
     if (mainNumber === 1) {
         randomnum = 1.01;
+    } else {
+        randomnum = Math.floor(Math.random() * (mainNumber * precision - 1 * precision) + 1 * precision) / (1 * precision);
     }
-    randomnum = Math.floor(Math.random() * (mainNumber * precision - 1 * precision) + 1 * precision) / (1 * precision);
     const interval = setInterval(() => {
         if (crashNumber >= randomnum - 0.01) {
             ableToStop = false;
