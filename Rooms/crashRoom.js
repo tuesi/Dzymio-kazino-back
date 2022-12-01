@@ -161,7 +161,7 @@ async function setCrashBet(socket, clientBet) {
         }
         let newBet = await setBet(socket.id, clientBet, null, 'CRASH');
         crashBets.push(newBet);
-        crashClientMessages = setBetToMessage(newBet, crashClientMessages, parseInt(clientBet.prediction) > 1 ? "clientBet.prediction" : null);
+        crashClientMessages = setBetToMessage(newBet, crashClientMessages, parseInt(clientBet.prediction) > 1 ? clientBet.prediction : null);
         crashClientMessages = cleanUpList(100, crashClientMessages);
         if (checkIfThereIsPeopleInRoom()) io.in(crashRoom).emit('clientBetHistory', crashClientMessages);
     }
