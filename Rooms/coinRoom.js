@@ -152,7 +152,7 @@ async function setCoinBet(socket, clientBet) {
     if (!coinBets.some(bet => bet.clientId === clientBet.clientId)) {
         let newBet = await setBet(socket.id, clientBet, 2, 'COIN_FLIP');
         coinBets.push(newBet);
-        coinClientMessages = setBetToMessage(newBet, coinClientMessages, newBet.prediction === 0 ? "Jimmy" : "Nooo");
+        coinClientMessages = setBetToMessage(newBet, coinClientMessages, newBet.prediction === "1" ? "Jimmy" : "Nooo");
         coinClientMessages = cleanUpList(100, coinClientMessages);
         if (checkIfThereIsPeopleInRoom()) io.in(coinRoom).emit('clientBetHistory', coinClientMessages);
     }
