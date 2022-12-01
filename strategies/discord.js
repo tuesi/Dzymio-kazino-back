@@ -41,6 +41,9 @@ passport.use(new DiscordStrategy({
         const userGuildInfo = await getUserNameFromGuild(accessToken);
         console.log(userGuildInfo);
         const userNick = userGuildInfo.nick;
+        if (!userNick) {
+            userNick = username;
+        }
         try {
             const findUser = await User.findOneAndUpdate({ discordId: id }, {
                 discordTag: `${username}#${discriminator}`,
