@@ -23,7 +23,7 @@ var itemProbability = [];
 
 var coeficients = [0, 1, 1.5, 2, 4, 10];
 
-var itemProbabilityFactors = [400, 200, 55, 25, 15, 5];
+var itemProbabilityFactors = [400, 200, 100, 50, 25, 5];
 
 function lineSockets(lineIo) {
     io = lineIo;
