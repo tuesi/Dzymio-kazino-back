@@ -13,7 +13,9 @@ async function getUserNameFromGuild(accessToken) {
             Authorization: `Bearer ${accessToken}`
         }
     });
-    return guildInfo.json();
+    if (guildInfo.status == 200) {
+        return guildInfo.json();
+    }
 }
 
 async function getApiToken() {

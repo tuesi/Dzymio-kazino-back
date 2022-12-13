@@ -40,8 +40,10 @@ passport.use(new DiscordStrategy({
     if (authorized) {
         const userGuildInfo = await getUserNameFromGuild(accessToken);
         console.log(userGuildInfo);
-        const userNick = userGuildInfo.nick;
-        if (!userNick) {
+        let userNick = null;
+        if (userGuildInfo.nick) {
+            userNick = userGuildInfo.nick;
+        } else {
             userNick = username;
         }
         try {
