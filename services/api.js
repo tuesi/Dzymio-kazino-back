@@ -1,5 +1,7 @@
 const fetch = require('node-fetch');
 const loginData = { username: process.env.API_USERNAME, password: process.env.API_PASSWORD };
+const Lives = require('../database/schemas/Lives');
+const Leaderboard = require('../database/schemas/Leaderboard');
 
 var token;
 
@@ -117,12 +119,97 @@ async function sendClientBetOutcome(betId, outcome, coefficient) {
         },
         body: JSON.stringify(setBody)
     });
-    if (response === 403) {
+    if (response.status === 403) {
         await getApiToken();
         sendClientBetOutcome(betId, outcome, coefficient);
-    } else {
-        console.log(response);
     }
 }
 
-module.exports = { getUserNameFromGuild, getApiToken, getUserBalance, sendClientBet, sendClientBetOutcome, sendClientBetWitouthCoefficient }
+async function cancelBetOutcome(betId) {
+    let response = await fetch('https://dzimyneutron.herokuapp.com/v2/betting/bets/' + betId + '/cancel', {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${this.token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    if (response.status === 403) {
+        await getApiToken();
+        cancelBetOutcome(betId);
+    }
+}
+
+async function addClientLives(userId) {
+    if (await Lives.findOne({ discordId: userId })) {
+        await Lives.updateOne(
+            { discordId: userId },
+            {
+                $inc: { lives: 1 },
+                givenToday: true
+            },
+        );
+    } else {
+        await Lives.create({
+            discordId: userId,
+            lives: 1,
+            givenToday: true
+        });
+    }
+}
+
+async function removeClientLives(userId) {
+    if (await Lives.findOne({ discordId: userId })) {
+        await Lives.updateOne(
+            { discordId: userId },
+            { $inc: { lives: -1 } }
+        );
+    }
+}
+
+async function getClientLives(userId) {
+    return await Lives.findOne({ discordId: userId });
+}
+
+async function resetAbleToGetLives() {
+    await Lives.updateMany({}, { givenToday: false })
+}
+
+async function updateLeaderboard(clientId, clientName, betStatus, amount) {
+    if (betStatus) {
+        const findUser = await Leaderboard.findOneAndUpdate({ discordId: clientId }, {
+            username: clientName,
+            $inc: { won: amount }
+        }, { new: true });
+        if (!findUser) {
+            await Leaderboard.create({
+                discordId: clientId,
+                username: clientName,
+                won: amount,
+                lost: 0
+            });
+        }
+    } else {
+        const findUser = await Leaderboard.findOneAndUpdate({ discordId: clientId }, {
+            username: clientName,
+            $inc: { lost: amount }
+        }, { new: true });
+        if (!findUser) {
+            await Leaderboard.create({
+                discordId: clientId,
+                username: clientName,
+                won: 0,
+                lost: amount
+            });
+        }
+    }
+}
+
+async function getLeaderboard() {
+    return await Leaderboard.find();
+}
+
+module.exports = {
+    getUserNameFromGuild, getApiToken, getUserBalance, sendClientBet, sendClientBetOutcome,
+    sendClientBetWitouthCoefficient, addClientLives, removeClientLives, getClientLives, resetAbleToGetLives,
+    updateLeaderboard, getLeaderboard, cancelBetOutcome
+}

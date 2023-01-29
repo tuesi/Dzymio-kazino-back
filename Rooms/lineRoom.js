@@ -1,4 +1,4 @@
-const { setBet, setBetToMessage, sendClientBetOutomeWithCoefficient, setClientBetOutcomeMessage, cleanUpList } = require('../services/sharedFunctionService');
+const { setBet, setBetToMessage, sendClientBetOutomeWithCoefficient, setClientBetOutcomeMessage, cleanUpList, checkClientLives, cancelBet, setClientBetMutualOutcomeMessage, checkAndRemoveClientLives } = require('../services/sharedFunctionService');
 const BetResponseObject = require('../objects/betResponseObject');
 
 var io;
@@ -112,7 +112,6 @@ function resetRoom() {
     getClientStatusToMessage();
     sendPreviousLineResults();
     timeBetweenSpins();
-    currentDaySpinAmount();
     if (checkIfThereIsPeopleInRoom()) io.in(lineRoom).emit('newRound', true);
 }
 
@@ -158,7 +157,7 @@ function sendPreviousLineResults() {
 
 async function setLineBet(socket, clientBet) {
     if (!lineBets.some(bet => bet.clientId === clientBet.clientId)) {
-        let newBet = await setBet(socket.id, clientBet, null, 'MULTIPLIER');
+        let newBet = await setBet(socket.id, clientBet, null, 'MULTIPLIER', io);
         lineBets.push(newBet);
         lineClientMessages = setBetToMessage(newBet, lineClientMessages);
         lineClientMessages = cleanUpList(100, lineClientMessages);
@@ -167,23 +166,39 @@ async function setLineBet(socket, clientBet) {
 }
 
 function sendBetResultToClient() {
-    lineBets.forEach(bet => {
+    lineBets.forEach(async bet => {
         const response = new BetResponseObject();
-        response.status = lineNumber == 0 ? false : true;
-        response.amount = bet.betAmount * lineNumber;
+        if (lineNumber == 0 && await checkClientLives(bet.clientId)) {
+            response.status = true;
+            response.amount = bet.betAmount;
+        } else {
+            response.status = lineNumber == 0 ? false : true;
+            response.amount = bet.betAmount * lineNumber;
+        }
         io.in(bet.socketId).emit('betStatus', response);
     });
 }
 
 function getClientStatusToMessage() {
-    lineBets.forEach(bet => {
-        bet.betCoefficient = lineNumber;
-        sendClientBetOutomeWithCoefficient(bet, lineNumber == 0 ? false : true, lineNumber);
-        let betMessage = setClientBetOutcomeMessage(bet, lineNumber == 0 ? false : true);
-        lineClientMessages.push(betMessage);
-        lineClientMessages = cleanUpList(100, lineClientMessages);
+    var count = 0;
+    lineBets.forEach(async (bet, index, array) => {
+        if ((lineNumber == 0 && await checkAndRemoveClientLives(bet.clientId)) || lineNumber == 1) {
+            await cancelBet(bet, io);
+            let betMessage = setClientBetMutualOutcomeMessage(bet);
+            lineClientMessages.push(betMessage);
+            lineClientMessages = cleanUpList(100, lineClientMessages)
+        } else {
+            bet.betCoefficient = lineNumber;
+            sendClientBetOutomeWithCoefficient(bet, lineNumber == 0 ? false : true, lineNumber, io);
+            let betMessage = setClientBetOutcomeMessage(bet, lineNumber == 0 ? false : true);
+            lineClientMessages.push(betMessage);
+            lineClientMessages = cleanUpList(100, lineClientMessages);
+        }
+        count++;
+        if (count === array.length) {
+            currentDaySpinAmount();
+        }
     });
-    if (checkIfThereIsPeopleInRoom()) io.in(lineRoom).emit('clientBetHistory', lineClientMessages);
     lineBets = [];
 }
 

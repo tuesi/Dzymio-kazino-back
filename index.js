@@ -14,6 +14,7 @@ const { wheelSockets, initialWheelRoomEvent, wheelRoomEvents } = require('./Room
 const { coinSockets, coinRoomEvents, initialCoinRoomEvent } = require('./Rooms/coinRoom');
 const { lineSockets, lineRoomEvents, initialLineRoomEvent } = require('./Rooms/lineRoom');
 const { crashSockets, crashRoomEvents, initialCrashRoomEvent } = require('./Rooms/crashRoom');
+const { getBetHistory } = require('./services/getBetHistory');
 
 //TEST
 // const io = require('socket.io')(httpServer, {
@@ -88,7 +89,7 @@ coinSockets(io);
 lineSockets(io);
 crashSockets(io);
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   console.log("CONNECT");
 
   socket.on('join', roomName => {
@@ -153,5 +154,8 @@ function leaveRoom(socket) {
     socket.leave(crashRoom);
   }
 }
+
+require('./services/resetGetLives.js')();
+//getBetHistory();
 
 httpServer.listen(port, () => console.log(`listening on port ${port}`));

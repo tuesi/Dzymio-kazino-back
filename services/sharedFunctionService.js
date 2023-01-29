@@ -1,7 +1,7 @@
 const BetObject = require('../objects/betObject');
 const { getUserBalance } = require('../services/api');
 const { clientWalletToZeton } = require('../services/calculateClientWallet');
-const { sendClientBet, sendClientBetOutcome, sendClientBetWitouthCoefficient } = require('../services/api');
+const { sendClientBet, sendClientBetOutcome, sendClientBetWitouthCoefficient, getClientLives, removeClientLives, updateLeaderboard, cancelBetOutcome } = require('../services/api');
 const User = require('../database/schemas/User');
 
 function setClientBetOutcomeMessage(bet, betStatus) {
@@ -11,15 +11,31 @@ function setClientBetOutcomeMessage(bet, betStatus) {
     return { clientId: bet.clientId, avatar: bet.clientAvatar, username: bet.clientNick, message: newMessage };
 }
 
-async function sendClientBetOutome(bet, betStatus) {
+function setClientBetMutualOutcomeMessage(bet) {
+    let newMessage = "";
+    newMessage += 'Susigražino pastatytą sumą' + ' ';
+    newMessage += bet.betAmount;
+    return { clientId: bet.clientId, avatar: bet.clientAvatar, username: bet.clientNick, message: newMessage };
+}
+
+async function sendClientBetOutome(bet, betStatus, io) {
+    await updateLeaderboard(bet.clientId, bet.clientNick, betStatus, (betStatus ? Math.floor(bet.betAmount * bet.betCoefficient) : bet.betAmount));
     await sendClientBetOutcome(bet.betId, betStatus);
+    io.in(bet.socketId).emit('updateWallet');
 }
 
-async function sendClientBetOutomeWithCoefficient(bet, betStatus, coefficient) {
+async function sendClientBetOutomeWithCoefficient(bet, betStatus, coefficient, io) {
+    await updateLeaderboard(bet.clientId, bet.clientNick, betStatus, (betStatus ? Math.floor(bet.betAmount * coefficient) : bet.betAmount));
     await sendClientBetOutcome(bet.betId, betStatus, coefficient);
+    io.in(bet.socketId).emit('updateWallet');
 }
 
-async function setBet(socketId, clientBet, coefficient, gameName) {
+async function cancelBet(bet, io) {
+    await cancelBetOutcome(bet.betId);
+    io.in(bet.socketId).emit('updateWallet');
+}
+
+async function setBet(socketId, clientBet, coefficient, gameName, io) {
     //check if user has required amount to bet
     const userBalance = await getUserBalance(clientBet.clientId);
     const balances = await userBalance.balances;
@@ -32,6 +48,7 @@ async function setBet(socketId, clientBet, coefficient, gameName) {
         } else if (clientBet.prediction) {
             betId = await sendClientBet(clientBet.clientId, Math.abs(clientBet.betAmount), coefficient, gameName);
         }
+        io.in(socketId).emit('updateWallet');
         const newBet = new BetObject(socketId, clientBet.clientId, clientBet.clientNick, Math.abs(clientBet.betAmount), clientBet.prediction, coefficient, betId, user.avatar);
         return newBet;
     }
@@ -56,4 +73,35 @@ function cleanUpList(maxAmount, list) {
     return newList;
 }
 
-module.exports = { setClientBetOutcomeMessage, setBet, setBetToMessage, sendClientBetOutome, sendClientBetOutomeWithCoefficient, cleanUpList };
+async function checkAndRemoveClientLives(clientId) {
+    const clientLives = await getClientLives(clientId);
+    if (clientLives) {
+        var string = JSON.stringify(clientLives);
+        var obj = JSON.parse(string);
+        if (obj.lives > 0) {
+            await removeClientLives(clientId);
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+async function checkClientLives(clientId) {
+    const clientLives = await getClientLives(clientId);
+    if (clientLives) {
+        var string = JSON.stringify(clientLives);
+        var obj = JSON.parse(string);
+        if (obj.lives > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+module.exports = { setClientBetOutcomeMessage, setBet, setBetToMessage, sendClientBetOutome, sendClientBetOutomeWithCoefficient, cleanUpList, checkClientLives, cancelBet, setClientBetMutualOutcomeMessage, checkAndRemoveClientLives };

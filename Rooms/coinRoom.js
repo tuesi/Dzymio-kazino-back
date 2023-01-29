@@ -1,4 +1,4 @@
-const { setBet, setBetToMessage, setClientBetOutcomeMessage, sendClientBetOutome, cleanUpList } = require('../services/sharedFunctionService');
+const { setBet, setBetToMessage, setClientBetOutcomeMessage, sendClientBetOutome, cleanUpList, checkClientLives, cancelBet, setClientBetMutualOutcomeMessage, checkAndRemoveClientLives } = require('../services/sharedFunctionService');
 const BetResponseObject = require('../objects/betResponseObject');
 
 var io;
@@ -111,7 +111,6 @@ function resetRoom() {
     sendBetResultToClient();
     getClientStatusToMessage();
     timeBetweenSpins();
-    currentDaySpinAmount();
 }
 
 function currentDaySpinAmount() {
@@ -150,7 +149,7 @@ function timeBetweenSpins() {
 
 async function setCoinBet(socket, clientBet) {
     if (!coinBets.some(bet => bet.clientId === clientBet.clientId)) {
-        let newBet = await setBet(socket.id, clientBet, 2, 'COIN_FLIP');
+        let newBet = await setBet(socket.id, clientBet, 2, 'COIN_FLIP', io);
         coinBets.push(newBet);
         coinClientMessages = setBetToMessage(newBet, coinClientMessages, newBet.prediction === "1" ? "Jimmy" : "Nooo");
         coinClientMessages = cleanUpList(100, coinClientMessages);
@@ -158,25 +157,41 @@ async function setCoinBet(socket, clientBet) {
     }
 }
 
-function sendBetResultToClient() {
-    coinBets.forEach(bet => {
-        const response = new BetResponseObject();
+async function sendBetResultToClient() {
+    coinBets.forEach(async bet => {
+        let response = new BetResponseObject();
         const betResult = bet.prediction == coinSide.toString() ? 2 : 0;
-        response.status = betResult == 0 ? false : true;
-        response.amount = (betResult == 0 ? bet.betAmount : bet.betAmount * betResult);
+        if (betResult == 0 && await checkClientLives(bet.clientId)) {
+            response.status = true;
+            response.amount = bet.betAmount;
+        } else {
+            response.status = betResult == 0 ? false : true;
+            response.amount = (betResult == 0 ? bet.betAmount : bet.betAmount * betResult);
+        }
         io.in(bet.socketId).emit('betStatus', response);
     });
 }
 
-function getClientStatusToMessage() {
-    coinBets.forEach(bet => {
+async function getClientStatusToMessage() {
+    var count = 0;
+    coinBets.forEach(async (bet, index, array) => {
         const betResult = bet.prediction == coinSide.toString() ? 2 : 0;
-        sendClientBetOutome(bet, betResult == 0 ? false : true);
-        let betMessage = setClientBetOutcomeMessage(bet, betResult == 0 ? false : true);
-        coinClientMessages.push(betMessage);
-        coinClientMessages = cleanUpList(100, coinClientMessages);
+        if (betResult == 0 && await checkAndRemoveClientLives(bet.clientId)) {
+            await cancelBet(bet, io);
+            let betMessage = setClientBetMutualOutcomeMessage(bet);
+            coinClientMessages.push(betMessage);
+            coinClientMessages = cleanUpList(100, coinClientMessages);
+        } else {
+            sendClientBetOutome(bet, betResult == 0 ? false : true, io);
+            let betMessage = setClientBetOutcomeMessage(bet, betResult == 0 ? false : true);
+            coinClientMessages.push(betMessage);
+            coinClientMessages = cleanUpList(100, coinClientMessages);
+        }
+        count++;
+        if (count === array.length) {
+            currentDaySpinAmount();
+        }
     });
-    if (checkIfThereIsPeopleInRoom()) io.in(coinRoom).emit('clientBetHistory', coinClientMessages);
     coinBets = [];
 }
 

@@ -1,5 +1,5 @@
 const BetResultService = require('../services/betResultService');
-const { setBet, setBetToMessage, setClientBetOutcomeMessage, sendClientBetOutome, cleanUpList } = require('../services/sharedFunctionService');
+const { setBet, setBetToMessage, setClientBetOutcomeMessage, sendClientBetOutome, cleanUpList, checkClientLives, cancelBet, setClientBetMutualOutcomeMessage, checkAndRemoveClientLives } = require('../services/sharedFunctionService');
 const BetResponseObject = require('../objects/betResponseObject');
 
 var sliceSize = 360 / 20;
@@ -136,7 +136,6 @@ function resetRoom() {
     sendBetResultToClient();
     getClientStatusToMessage();
     ableToBetWheel = true;
-    currentDaySpinAmount();
     if (checkIfThereIsPeopleInRoom()) io.in(wheelRoom).emit('newRound', true);
     timeBetweenSpins();
 }
@@ -162,30 +161,46 @@ function sendPreviousWeelResults() {
 }
 
 function sendBetResultToClient() {
-    wheelBets.forEach(bet => {
+    wheelBets.forEach(async bet => {
         const response = new BetResponseObject();
         const betResult = BetResultService.getWheelBetStatus(bet.prediction, spinValue, wheelValues, wheelColors);
-        response.status = betResult == 0 ? false : true;
-        response.amount = (betResult == 0 ? bet.betAmount : bet.betAmount * betResult);
+        if (betResult == 0 && await checkClientLives(bet.clientId)) {
+            response.status = true;
+            response.amount = bet.betAmount;
+        } else {
+            response.status = betResult == 0 ? false : true;
+            response.amount = (betResult == 0 ? bet.betAmount : bet.betAmount * betResult);
+        }
         io.in(bet.socketId).emit('betStatus', response);
     });
 }
 
 function getClientStatusToMessage() {
-    wheelBets.forEach(bet => {
+    var count = 0;
+    wheelBets.forEach(async (bet, index, array) => {
         const betResult = BetResultService.getWheelBetStatus(bet.prediction, spinValue, wheelValues, wheelColors);
-        sendClientBetOutome(bet, betResult == 0 ? false : true);
-        let betMessage = setClientBetOutcomeMessage(bet, betResult == 0 ? false : true);
-        wheelClientMessages.push(betMessage);
-        wheelClientMessages = cleanUpList(100, wheelClientMessages);
+        if (betResult == 0 && await checkAndRemoveClientLives(bet.clientId)) {
+            await cancelBet(bet, io);
+            let betMessage = setClientBetMutualOutcomeMessage(bet);
+            wheelClientMessages.push(betMessage);
+            wheelClientMessages = cleanUpList(100, wheelClientMessages);
+        } else {
+            sendClientBetOutome(bet, betResult == 0 ? false : true, io);
+            let betMessage = setClientBetOutcomeMessage(bet, betResult == 0 ? false : true);
+            wheelClientMessages.push(betMessage);
+            wheelClientMessages = cleanUpList(100, wheelClientMessages);
+        }
+        count++;
+        if (count === array.length) {
+            currentDaySpinAmount();
+        }
     });
-    if (checkIfThereIsPeopleInRoom()) io.in(wheelRoom).emit('clientBetHistory', wheelClientMessages);
     wheelBets = [];
 }
 
 async function setWheelBet(socket, clientBet) {
     if (!wheelBets.some(bet => bet.clientId === clientBet.clientId)) {
-        let newBet = await setBet(socket.id, clientBet, BetResultService.getWheelBetCoefficients(clientBet.prediction), 'WHEEL');
+        let newBet = await setBet(socket.id, clientBet, BetResultService.getWheelBetCoefficients(clientBet.prediction), 'WHEEL', io);
         wheelBets.push(newBet);
         wheelClientMessages = setBetToMessage(newBet, wheelClientMessages, BetResultService.wheelBetToNiceName(clientBet.prediction));
         wheelClientMessages = cleanUpList(100, wheelClientMessages);

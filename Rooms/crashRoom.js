@@ -1,4 +1,4 @@
-const { setBet, setBetToMessage, setClientBetOutcomeMessage, sendClientBetOutomeWithCoefficient, cleanUpList } = require('../services/sharedFunctionService');
+const { setBet, setBetToMessage, setClientBetOutcomeMessage, sendClientBetOutomeWithCoefficient, cleanUpList, checkClientLives, cancelBet, setClientBetMutualOutcomeMessage, checkAndRemoveClientLives } = require('../services/sharedFunctionService');
 const BetResponseObject = require('../objects/betResponseObject');
 
 var io;
@@ -130,7 +130,6 @@ function resetRoom() {
     sendBetLostResultToClient();
     getLostClientStatusToMessage();
     timeBetweenSpins();
-    currentDaySpinAmount();
     if (checkIfThereIsPeopleInRoom()) io.in(lineRoom).emit('newRound', true);
 }
 
@@ -159,7 +158,7 @@ async function setCrashBet(socket, clientBet) {
         if (parseInt(clientBet.prediction) < 1) {
             clientBet.prediction = 0;
         }
-        let newBet = await setBet(socket.id, clientBet, null, 'CRASH');
+        let newBet = await setBet(socket.id, clientBet, null, 'CRASH', io);
         crashBets.push(newBet);
         crashClientMessages = setBetToMessage(newBet, crashClientMessages, parseInt(clientBet.prediction) > 1 ? clientBet.prediction : null);
         crashClientMessages = cleanUpList(100, crashClientMessages);
@@ -183,7 +182,7 @@ function getClientToStopCrash(socket, currentCrashNumber) {
 async function stopCrash(index, currentCrashNumber) {
     // send response to jimmy api with crashNumber
     crashBets[index].betCoefficient = currentCrashNumber;
-    sendClientBetOutomeWithCoefficient(crashBets[index], true, currentCrashNumber);
+    sendClientBetOutomeWithCoefficient(crashBets[index], true, currentCrashNumber, io);
     let betMessage = setClientBetOutcomeMessage(crashBets[index], true);
     // add win response to client messages
     crashClientMessages.push(betMessage);
@@ -207,24 +206,40 @@ function sendBetWinResultToclient(bet, stopCrashNumber) {
     io.in(bet.socketId).emit('betStatus', response);
 }
 
-function sendBetLostResultToClient() {
-    crashBets.forEach(bet => {
+async function sendBetLostResultToClient() {
+    crashBets.forEach(async bet => {
         const response = new BetResponseObject();
-        response.status = false;
-        response.amount = bet.betAmount;
+        if (await checkClientLives(bet.clientId)) {
+            response.status = true;
+            response.amount = bet.betAmount;
+        } else {
+            response.status = false;
+            response.amount = bet.betAmount;
+        }
         io.in(bet.socketId).emit('betStatus', response);
     });
 }
 
-function getLostClientStatusToMessage() {
-    crashBets.forEach(bet => {
-        bet.betCoefficient = 0;
-        sendClientBetOutomeWithCoefficient(bet, false, 0);
-        let betMessage = setClientBetOutcomeMessage(bet, false);
-        crashClientMessages.push(betMessage);
-        crashClientMessages = cleanUpList(100, crashClientMessages);
+async function getLostClientStatusToMessage() {
+    var count = 0;
+    crashBets.forEach(async (bet, index, array) => {
+        if (await checkAndRemoveClientLives(bet.clientId)) {
+            await cancelBet(bet, io);
+            let betMessage = setClientBetMutualOutcomeMessage(bet);
+            crashClientMessages.push(betMessage);
+            crashClientMessages = cleanUpList(100, crashClientMessages);
+        } else {
+            bet.betCoefficient = 0;
+            sendClientBetOutomeWithCoefficient(bet, false, 0, io);
+            let betMessage = setClientBetOutcomeMessage(bet, false);
+            crashClientMessages.push(betMessage);
+            crashClientMessages = cleanUpList(100, crashClientMessages);
+        }
+        count++;
+        if (count === array.length) {
+            currentDaySpinAmount();
+        }
     });
-    if (checkIfThereIsPeopleInRoom()) io.in(crashRoom).emit('clientBetHistory', crashClientMessages);
     crashBets = [];
 }
 
