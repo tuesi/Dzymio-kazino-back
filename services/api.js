@@ -140,7 +140,7 @@ async function cancelBetOutcome(betId) {
 }
 
 async function addClientLives(userId) {
-    if (await Lives.findOne({ discordId: userId })) {
+    if (await Lives.findOne({ discordId: userId, givenToday: false })) {
         await Lives.updateOne(
             { discordId: userId },
             {
