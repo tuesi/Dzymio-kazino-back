@@ -240,6 +240,9 @@ async function getLostClientStatusToMessage() {
             currentDaySpinAmount();
         }
     });
+    if (!(crashBets.length > 0)) {
+        currentDaySpinAmount();
+    }
     crashBets = [];
 }
 

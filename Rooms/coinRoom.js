@@ -192,6 +192,9 @@ async function getClientStatusToMessage() {
             currentDaySpinAmount();
         }
     });
+    if (!(coinBets.length > 0)) {
+        currentDaySpinAmount();
+    }
     coinBets = [];
 }
 

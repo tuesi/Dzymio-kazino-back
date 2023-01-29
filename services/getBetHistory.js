@@ -35,7 +35,7 @@ async function getBetHistory() {
         const data = await response.json();
         let count = 0;
         data.forEach(async (bet, index, array) => {
-            if (bet.done == true && bet.cancelled == false) {
+            if (bet.done == true && bet.cancelled == false && bet.coefficient !== 1) {
                 const foundIndex = betHistory.findIndex(x => BigInt(x.userId) == BigInt(bet.userIdString));
                 if (foundIndex !== -1) {
                     if (bet.won == true) {
@@ -54,9 +54,7 @@ async function getBetHistory() {
             count++;
             if (count == array.length) {
                 betHistory.forEach(async bet => {
-                    await Leaderboard.create({
-                        discordId: bet.userId,
-                        username: 'newClient',
+                    await Leaderboard.findOneAndUpdate({ discordId: bet.userId }, {
                         won: bet.won,
                         lost: bet.lost
                     });

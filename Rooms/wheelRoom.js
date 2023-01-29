@@ -195,6 +195,9 @@ function getClientStatusToMessage() {
             currentDaySpinAmount();
         }
     });
+    if (!(wheelBets.length > 0)) {
+        currentDaySpinAmount();
+    }
     wheelBets = [];
 }
 

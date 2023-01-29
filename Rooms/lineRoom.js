@@ -199,6 +199,9 @@ function getClientStatusToMessage() {
             currentDaySpinAmount();
         }
     });
+    if (!(lineBets.length > 0)) {
+        currentDaySpinAmount();
+    }
     lineBets = [];
 }
 
