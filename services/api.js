@@ -157,6 +157,22 @@ async function addClientLives(userId) {
     }
 }
 
+async function wasGivenToday(userId) {
+    if (await Lives.findOne({ discordId: userId })) {
+        await Lives.updateOne(
+            { discordId: userId },
+            {
+                givenToday: true
+            },
+        );
+    } else {
+        await Lives.create({
+            discordId: userId,
+            givenToday: true
+        });
+    }
+}
+
 async function removeClientLives(userId) {
     if (await Lives.findOne({ discordId: userId })) {
         await Lives.updateOne(
@@ -211,5 +227,5 @@ async function getLeaderboard() {
 module.exports = {
     getUserNameFromGuild, getApiToken, getUserBalance, sendClientBet, sendClientBetOutcome,
     sendClientBetWitouthCoefficient, addClientLives, removeClientLives, getClientLives, resetAbleToGetLives,
-    updateLeaderboard, getLeaderboard, cancelBetOutcome
+    updateLeaderboard, getLeaderboard, cancelBetOutcome, wasGivenToday
 }

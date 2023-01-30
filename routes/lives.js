@@ -1,12 +1,24 @@
 const router = require('express').Router();
 const bodyParser = require('body-parser')
-const { addClientLives, removeClientLives, getClientLives } = require('../services/api');
+const { addClientLives, removeClientLives, getClientLives, wasGivenToday } = require('../services/api');
 
 router.post('/addLives', bodyParser.json(), async (req, res) => {
     if (req.body.discordId && req.body.secret == process.env.secret) {
         let user = await getClientLives(req.body.discordId);
         if (user.givenToday == false) {
             await addClientLives(req.body.discordId);
+            res.sendStatus(201);
+        } else {
+            res.sendStatus(403);
+        }
+    }
+});
+
+router.post('/setGiven', bodyParser.json(), async (req, res) => {
+    if (req.body.discordId && req.body.secret == process.env.secret) {
+        let user = await getClientLives(req.body.discordId);
+        if (user.givenToday == false) {
+            await wasGivenToday(req.body.discordId);
             res.sendStatus(201);
         } else {
             res.sendStatus(403);
