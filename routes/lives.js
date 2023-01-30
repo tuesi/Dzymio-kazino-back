@@ -15,7 +15,6 @@ router.post('/addLives', bodyParser.json(), async (req, res) => {
 });
 
 router.post('/setGiven', bodyParser.json(), async (req, res) => {
-    console.log('requested given');
     if (req.body.discordId && req.body.secret == process.env.secret) {
         await wasGivenToday(req.body.discordId);
         res.sendStatus(201);
