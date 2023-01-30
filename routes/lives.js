@@ -38,4 +38,19 @@ router.get('/getLives', async (req, res) => {
     }
 });
 
+router.get('/wasGiven', async (req, res) => {
+    if (req.query.discordId) {
+        let lives = await getClientLives(req.query.discordId);
+        if (lives) {
+            var string = JSON.stringify(lives);
+            var obj = JSON.parse(string);
+            res.send({ isSet: obj.givenToday });
+        } else {
+            res.sendStatus(403);
+        }
+    } else {
+        res.sendStatus(403);
+    }
+});
+
 module.exports = router;

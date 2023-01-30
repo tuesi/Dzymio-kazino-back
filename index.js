@@ -156,6 +156,5 @@ function leaveRoom(socket) {
 }
 
 require('./services/resetGetLives.js')();
-//getBetHistory();
 
 httpServer.listen(port, () => console.log(`listening on port ${port}`));
