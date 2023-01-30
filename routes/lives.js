@@ -16,13 +16,10 @@ router.post('/addLives', bodyParser.json(), async (req, res) => {
 
 router.post('/setGiven', bodyParser.json(), async (req, res) => {
     if (req.body.discordId && req.body.secret == process.env.secret) {
-        let user = await getClientLives(req.body.discordId);
-        if (user.givenToday == false) {
-            await wasGivenToday(req.body.discordId);
-            res.sendStatus(201);
-        } else {
-            res.sendStatus(403);
-        }
+        await wasGivenToday(req.body.discordId);
+        res.sendStatus(201);
+    } else {
+        res.sendStatus(403);
     }
 });
 
