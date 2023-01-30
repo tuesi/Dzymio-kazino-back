@@ -168,6 +168,7 @@ async function wasGivenToday(userId) {
     } else {
         await Lives.create({
             discordId: userId,
+            lives: 0,
             givenToday: true
         });
     }
