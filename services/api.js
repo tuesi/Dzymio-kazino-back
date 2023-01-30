@@ -158,9 +158,7 @@ async function addClientLives(userId) {
 }
 
 async function wasGivenToday(userId) {
-    console.log('was given today');
     if (await Lives.findOne({ discordId: userId })) {
-        console.log('user found');
         await Lives.updateOne(
             { discordId: userId },
             {
@@ -168,7 +166,6 @@ async function wasGivenToday(userId) {
             },
         );
     } else {
-        console.log('user was not found');
         await Lives.create({
             discordId: userId,
             lives: 0,

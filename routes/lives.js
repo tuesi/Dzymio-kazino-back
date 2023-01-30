@@ -3,19 +3,24 @@ const bodyParser = require('body-parser')
 const { addClientLives, removeClientLives, getClientLives, wasGivenToday } = require('../services/api');
 
 router.post('/addLives', bodyParser.json(), async (req, res) => {
-    if (req.body.discordId && req.body.secret == process.env.secret) {
+    if (req.body.discordId && req.body.secret == process.env.SECRET) {
         let user = await getClientLives(req.body.discordId);
-        if (user.givenToday == false) {
+        if (user) {
+            if (user.givenToday == false) {
+                await addClientLives(req.body.discordId);
+                res.sendStatus(201);
+            } else {
+                res.sendStatus(403);
+            }
+        } else {
             await addClientLives(req.body.discordId);
             res.sendStatus(201);
-        } else {
-            res.sendStatus(403);
         }
     }
 });
 
 router.post('/setGiven', bodyParser.json(), async (req, res) => {
-    if (req.body.discordId && req.body.secret == process.env.secret) {
+    if (req.body.discordId && req.body.secret == process.env.SECRET) {
         await wasGivenToday(req.body.discordId);
         res.sendStatus(201);
     } else {
@@ -24,7 +29,7 @@ router.post('/setGiven', bodyParser.json(), async (req, res) => {
 });
 
 router.post('/removeLives', bodyParser.json(), async (req, res) => {
-    if (req.body.discordId && req.body.secret == process.env.secret) {
+    if (req.body.discordId && req.body.secret == process.env.SECRET) {
         await removeClientLives(req.body.discordId);
         res.sendStatus(201);
     } else {
