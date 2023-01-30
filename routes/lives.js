@@ -46,7 +46,7 @@ router.get('/wasGiven', async (req, res) => {
             var obj = JSON.parse(string);
             res.send({ isSet: obj.givenToday });
         } else {
-            res.sendStatus(403);
+            res.sendStatus(204);
         }
     } else {
         res.sendStatus(403);
