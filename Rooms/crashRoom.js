@@ -189,9 +189,9 @@ async function stopCrash(index, currentCrashNumber) {
     crashClientMessages = cleanUpList(100, crashClientMessages);
     // send win response to client
     sendBetWinResultToclient(crashBets[index], currentCrashNumber);
+    crashBets.splice(index, 1);
     //send win message to room
     if (checkIfThereIsPeopleInRoom()) io.in(crashRoom).emit('clientBetHistory', crashClientMessages);
-    crashBets.splice(index, 1);
 
     // remove bet object with current client socket id
     // bets that are left in the crashBets are the people who lost
