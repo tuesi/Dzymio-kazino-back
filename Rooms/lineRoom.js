@@ -182,7 +182,7 @@ function sendBetResultToClient() {
 function getClientStatusToMessage() {
     var count = 0;
     lineBets.forEach(async (bet, index, array) => {
-        if ((lineNumber == 0 && await checkAndRemoveClientLives(bet.clientId)) || lineNumber == 1) {
+        if ((lineNumber == 0 && await checkAndRemoveClientLives(bet.clientId))) {
             await cancelBet(bet, io);
             let betMessage = setClientBetMutualOutcomeMessage(bet);
             lineClientMessages.push(betMessage);
@@ -190,7 +190,12 @@ function getClientStatusToMessage() {
         } else {
             bet.betCoefficient = lineNumber;
             sendClientBetOutomeWithCoefficient(bet, lineNumber == 0 ? false : true, lineNumber, io);
-            let betMessage = setClientBetOutcomeMessage(bet, lineNumber == 0 ? false : true);
+            let betMessage;
+            if (lineNumber == 1) {
+                betMessage = setClientBetMutualOutcomeMessage(bet);
+            } else {
+                betMessage = setClientBetOutcomeMessage(bet, lineNumber == 0 ? false : true);
+            }
             lineClientMessages.push(betMessage);
             lineClientMessages = cleanUpList(100, lineClientMessages);
         }
