@@ -107,7 +107,7 @@ async function sendClientBetWitouthCoefficient(userId, amount, game) {
 async function sendClientBetOutcome(betId, outcome, coefficient, announce) {
     let setBody;
     if (coefficient) {
-        if (announce) {
+        if (announce !== undefined || announce !== null) {
             setBody = { won: outcome, coefficient: coefficient, announce: announce };
         } else {
             setBody = { won: outcome, coefficient: coefficient };

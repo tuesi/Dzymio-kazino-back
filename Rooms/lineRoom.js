@@ -207,8 +207,8 @@ function getClientStatusToMessage() {
     });
     if (!(lineBets.length > 0)) {
         currentDaySpinAmount();
-        lineBets = [];
     }
+    lineBets = [];
 }
 
 module.exports = { lineSockets, lineRoomEvents, initialLineRoomEvent };
