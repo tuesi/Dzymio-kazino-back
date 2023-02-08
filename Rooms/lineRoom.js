@@ -203,7 +203,6 @@ function getClientStatusToMessage() {
         count++;
         if (count === array.length) {
             currentDaySpinAmount();
-            lineBets = [];
         }
     });
     if (!(lineBets.length > 0)) {
