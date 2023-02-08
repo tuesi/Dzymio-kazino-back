@@ -189,11 +189,12 @@ function getClientStatusToMessage() {
             lineClientMessages = cleanUpList(100, lineClientMessages)
         } else {
             bet.betCoefficient = lineNumber;
-            sendClientBetOutomeWithCoefficient(bet, lineNumber == 0 ? false : true, lineNumber, io);
             let betMessage;
             if (lineNumber == 1) {
+                sendClientBetOutomeWithCoefficient(bet, lineNumber == 0 ? false : true, lineNumber, io, false);
                 betMessage = setClientBetMutualOutcomeMessage(bet);
             } else {
+                sendClientBetOutomeWithCoefficient(bet, lineNumber == 0 ? false : true, lineNumber, io);
                 betMessage = setClientBetOutcomeMessage(bet, lineNumber == 0 ? false : true);
             }
             lineClientMessages.push(betMessage);
@@ -202,12 +203,13 @@ function getClientStatusToMessage() {
         count++;
         if (count === array.length) {
             currentDaySpinAmount();
+            lineBets = [];
         }
     });
     if (!(lineBets.length > 0)) {
         currentDaySpinAmount();
+        lineBets = [];
     }
-    lineBets = [];
 }
 
 module.exports = { lineSockets, lineRoomEvents, initialLineRoomEvent };

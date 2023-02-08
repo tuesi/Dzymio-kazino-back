@@ -24,9 +24,9 @@ async function sendClientBetOutome(bet, betStatus, io) {
     io.in(bet.socketId).emit('updateWallet');
 }
 
-async function sendClientBetOutomeWithCoefficient(bet, betStatus, coefficient, io) {
+async function sendClientBetOutomeWithCoefficient(bet, betStatus, coefficient, io, announce) {
     await updateLeaderboard(bet.clientId, bet.clientNick, betStatus, (betStatus ? Math.floor(bet.betAmount * coefficient) : bet.betAmount));
-    await sendClientBetOutcome(bet.betId, betStatus, coefficient);
+    await sendClientBetOutcome(bet.betId, betStatus, coefficient, announce);
     io.in(bet.socketId).emit('updateWallet');
 }
 
