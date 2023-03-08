@@ -11,9 +11,9 @@ function setClientBetOutcomeMessage(bet, betStatus) {
     return { clientId: bet.clientId, avatar: bet.clientAvatar, username: bet.clientNick, message: newMessage };
 }
 
-function setClientBetMutualOutcomeMessage(bet) {
+async function setClientBetMutualOutcomeMessage(bet) {
     let newMessage = "";
-    newMessage += 'Susigražino pastatytą sumą' + ' ';
+    newMessage += 'Susigražino' + ' ';
     newMessage += bet.betAmount;
     return { clientId: bet.clientId, avatar: bet.clientAvatar, username: bet.clientNick, message: newMessage };
 }
@@ -31,8 +31,9 @@ async function sendClientBetOutomeWithCoefficient(bet, betStatus, coefficient, i
 }
 
 async function cancelBet(bet, io) {
-    await cancelBetOutcome(bet.betId);
+    const cancelResponse = await cancelBetOutcome(bet.betId);
     io.in(bet.socketId).emit('updateWallet');
+    return cancelResponse.payout;
 }
 
 async function setBet(socketId, clientBet, coefficient, gameName, io) {

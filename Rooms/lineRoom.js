@@ -170,10 +170,14 @@ function sendBetResultToClient() {
         const response = new BetResponseObject();
         if (lineNumber == 0 && await checkClientLives(bet.clientId)) {
             response.status = true;
-            response.amount = bet.betAmount;
+            response.amount = 0;
         } else {
             response.status = lineNumber == 0 ? false : true;
-            response.amount = bet.betAmount * lineNumber;
+            if (lineNumber == 0) {
+                response.amount = bet.betAmount
+            } else {
+                response.amount = bet.betAmount * lineNumber;
+            }
         }
         io.in(bet.socketId).emit('betStatus', response);
     });
@@ -183,8 +187,8 @@ function getClientStatusToMessage() {
     var count = 0;
     lineBets.forEach(async (bet, index, array) => {
         if ((lineNumber == 0 && await checkAndRemoveClientLives(bet.clientId))) {
-            await cancelBet(bet, io);
-            let betMessage = setClientBetMutualOutcomeMessage(bet);
+            const betOutcome = await cancelBet(bet, io);
+            const betMessage = await setClientBetMutualOutcomeMessage({ betAmount: betOutcome });
             lineClientMessages.push(betMessage);
             lineClientMessages = cleanUpList(100, lineClientMessages)
         } else {

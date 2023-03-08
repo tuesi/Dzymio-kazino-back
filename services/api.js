@@ -140,6 +140,8 @@ async function cancelBetOutcome(betId) {
     if (response.status === 403) {
         await getApiToken();
         cancelBetOutcome(betId);
+    } else {
+        return await response.json();
     }
 }
 

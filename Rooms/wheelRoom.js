@@ -166,7 +166,7 @@ function sendBetResultToClient() {
         const betResult = BetResultService.getWheelBetStatus(bet.prediction, spinValue, wheelValues, wheelColors);
         if (betResult == 0 && await checkClientLives(bet.clientId)) {
             response.status = true;
-            response.amount = bet.betAmount;
+            response.amount = 0;
         } else {
             response.status = betResult == 0 ? false : true;
             response.amount = (betResult == 0 ? bet.betAmount : bet.betAmount * betResult);
@@ -180,8 +180,8 @@ function getClientStatusToMessage() {
     wheelBets.forEach(async (bet, index, array) => {
         const betResult = BetResultService.getWheelBetStatus(bet.prediction, spinValue, wheelValues, wheelColors);
         if (betResult == 0 && await checkAndRemoveClientLives(bet.clientId)) {
-            await cancelBet(bet, io);
-            let betMessage = setClientBetMutualOutcomeMessage(bet);
+            const betOutcome = await cancelBet(bet, io);
+            const betMessage = await setClientBetMutualOutcomeMessage({ betAmount: betOutcome });
             wheelClientMessages.push(betMessage);
             wheelClientMessages = cleanUpList(100, wheelClientMessages);
         } else {

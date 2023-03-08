@@ -163,7 +163,7 @@ async function sendBetResultToClient() {
         const betResult = bet.prediction == coinSide.toString() ? 2 : 0;
         if (betResult == 0 && await checkClientLives(bet.clientId)) {
             response.status = true;
-            response.amount = bet.betAmount;
+            response.amount = 0;
         } else {
             response.status = betResult == 0 ? false : true;
             response.amount = (betResult == 0 ? bet.betAmount : bet.betAmount * betResult);
@@ -177,8 +177,8 @@ async function getClientStatusToMessage() {
     coinBets.forEach(async (bet, index, array) => {
         const betResult = bet.prediction == coinSide.toString() ? 2 : 0;
         if (betResult == 0 && await checkAndRemoveClientLives(bet.clientId)) {
-            await cancelBet(bet, io);
-            let betMessage = setClientBetMutualOutcomeMessage(bet);
+            const betOutcome = await cancelBet(bet, io);
+            const betMessage = setClientBetMutualOutcomeMessage({ betAmount: betOutcome });
             coinClientMessages.push(betMessage);
             coinClientMessages = cleanUpList(100, coinClientMessages);
         } else {
