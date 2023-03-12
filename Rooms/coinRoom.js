@@ -178,7 +178,8 @@ async function getClientStatusToMessage() {
         const betResult = bet.prediction == coinSide.toString() ? 2 : 0;
         if (betResult == 0 && await checkAndRemoveClientLives(bet.clientId)) {
             const betOutcome = await cancelBet(bet, io);
-            const betMessage = setClientBetMutualOutcomeMessage({ betAmount: betOutcome });
+            bet.betAmount = betOutcome;
+            const betMessage = setClientBetMutualOutcomeMessage(bet);
             coinClientMessages.push(betMessage);
             coinClientMessages = cleanUpList(100, coinClientMessages);
         } else {

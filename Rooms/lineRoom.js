@@ -188,7 +188,8 @@ function getClientStatusToMessage() {
     lineBets.forEach(async (bet, index, array) => {
         if ((lineNumber == 0 && await checkAndRemoveClientLives(bet.clientId))) {
             const betOutcome = await cancelBet(bet, io);
-            const betMessage = await setClientBetMutualOutcomeMessage({ betAmount: betOutcome });
+            bet.betAmount = betOutcome;
+            const betMessage = await setClientBetMutualOutcomeMessage(bet);
             lineClientMessages.push(betMessage);
             lineClientMessages = cleanUpList(100, lineClientMessages)
         } else {

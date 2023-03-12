@@ -219,7 +219,8 @@ async function getLostClientStatusToMessage() {
     crashBets.forEach(async (bet, index, array) => {
         if (await checkAndRemoveClientLives(bet.clientId)) {
             const betOutcome = await cancelBet(bet, io);
-            const betMessage = await setClientBetMutualOutcomeMessage({ betAmount: betOutcome });
+            bet.betAmount = betOutcome;
+            const betMessage = await setClientBetMutualOutcomeMessage(bet);
             crashClientMessages.push(betMessage);
             crashClientMessages = cleanUpList(100, crashClientMessages);
         } else {

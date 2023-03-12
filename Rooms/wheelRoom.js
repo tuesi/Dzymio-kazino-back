@@ -181,7 +181,8 @@ function getClientStatusToMessage() {
         const betResult = BetResultService.getWheelBetStatus(bet.prediction, spinValue, wheelValues, wheelColors);
         if (betResult == 0 && await checkAndRemoveClientLives(bet.clientId)) {
             const betOutcome = await cancelBet(bet, io);
-            const betMessage = await setClientBetMutualOutcomeMessage({ betAmount: betOutcome });
+            bet.betAmount = betOutcome;
+            const betMessage = await setClientBetMutualOutcomeMessage(bet);
             wheelClientMessages.push(betMessage);
             wheelClientMessages = cleanUpList(100, wheelClientMessages);
         } else {
