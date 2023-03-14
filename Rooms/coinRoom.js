@@ -105,7 +105,11 @@ function spin() {
 }
 
 function resetRoom() {
-    coinRotation = 1.55;
+    if (coinSide == 1) {
+        coinRotation = 1.55;
+    } else {
+        coinRotation = 4.7;
+    }
     coinPositionZ = 1;
     ableToBet = true;
     sendPreviousCoins();
