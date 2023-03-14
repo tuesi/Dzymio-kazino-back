@@ -14,6 +14,8 @@ var coinClientMessages = [];
 var ableToBet = true;
 var spinTimer = 0;
 
+var betWinAmount = 1.94;
+
 var timeTillnextSpin = process.env.TIMER_IN_SECONDS;
 
 var currentDaySpin = 1;
@@ -149,7 +151,7 @@ function timeBetweenSpins() {
 
 async function setCoinBet(socket, clientBet) {
     if (!coinBets.some(bet => bet.clientId === clientBet.clientId)) {
-        let newBet = await setBet(socket.id, clientBet, 2, 'COIN_FLIP', io);
+        let newBet = await setBet(socket.id, clientBet, betWinAmount, 'COIN_FLIP', io);
         coinBets.push(newBet);
         coinClientMessages = setBetToMessage(newBet, coinClientMessages, newBet.prediction === "1" ? "Jimmy" : "Nooo");
         coinClientMessages = cleanUpList(100, coinClientMessages);
@@ -160,7 +162,7 @@ async function setCoinBet(socket, clientBet) {
 async function sendBetResultToClient() {
     coinBets.forEach(async bet => {
         let response = new BetResponseObject();
-        const betResult = bet.prediction == coinSide.toString() ? 2 : 0;
+        const betResult = bet.prediction == coinSide.toString() ? betWinAmount : 0;
         if (betResult == 0 && await checkClientLives(bet.clientId)) {
             response.status = true;
             response.amount = 0;
@@ -175,7 +177,7 @@ async function sendBetResultToClient() {
 async function getClientStatusToMessage() {
     var count = 0;
     coinBets.forEach(async (bet, index, array) => {
-        const betResult = bet.prediction == coinSide.toString() ? 2 : 0;
+        const betResult = bet.prediction == coinSide.toString() ? betWinAmount : 0;
         if (betResult == 0 && await checkAndRemoveClientLives(bet.clientId)) {
             const betOutcome = await cancelBet(bet, io);
             bet.betAmount = betOutcome;
