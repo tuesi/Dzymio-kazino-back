@@ -115,7 +115,7 @@ function resetRoom() {
     if (checkIfThereIsPeopleInRoom()) io.in(lineRoom).emit('newRound', true);
 }
 
-function currentDaySpinAmount() {
+async function currentDaySpinAmount() {
     if (currentDate < new Date().toLocaleDateString("lt")) {
         currentDaySpin = 1;
         currentDate = new Date().toLocaleDateString("lt");
@@ -197,7 +197,7 @@ function getClientStatusToMessage() {
             let betMessage;
             if (lineNumber == 1) {
                 sendClientBetOutomeWithCoefficient(bet, lineNumber == 0 ? false : true, lineNumber, io, false);
-                betMessage = setClientBetMutualOutcomeMessage(bet);
+                betMessage = await setClientBetMutualOutcomeMessage(bet);
             } else {
                 sendClientBetOutomeWithCoefficient(bet, lineNumber == 0 ? false : true, lineNumber, io);
                 betMessage = setClientBetOutcomeMessage(bet, lineNumber == 0 ? false : true);
@@ -207,7 +207,7 @@ function getClientStatusToMessage() {
         }
         count++;
         if (count === array.length) {
-            currentDaySpinAmount();
+            await currentDaySpinAmount();
         }
     });
     if (!(lineBets.length > 0)) {

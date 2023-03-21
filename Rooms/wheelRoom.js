@@ -140,7 +140,7 @@ function resetRoom() {
     timeBetweenSpins();
 }
 
-function currentDaySpinAmount() {
+async function currentDaySpinAmount() {
     if (currentDate < new Date().toLocaleDateString("lt")) {
         currentDaySpin = 1;
         currentDate = new Date().toLocaleDateString("lt");
@@ -193,7 +193,7 @@ function getClientStatusToMessage() {
         }
         count++;
         if (count === array.length) {
-            currentDaySpinAmount();
+            await currentDaySpinAmount();
         }
     });
     if (!(wheelBets.length > 0)) {

@@ -127,7 +127,7 @@ function resetRoom() {
     if (checkIfThereIsPeopleInRoom()) io.in(lineRoom).emit('newRound', true);
 }
 
-function currentDaySpinAmount() {
+async function currentDaySpinAmount() {
     if (currentDate < new Date().toLocaleDateString("lt")) {
         currentDaySpin = 1;
         currentDate = new Date().toLocaleDateString("lt");
@@ -232,7 +232,7 @@ async function getLostClientStatusToMessage() {
         }
         count++;
         if (count === array.length) {
-            currentDaySpinAmount();
+            await currentDaySpinAmount();
         }
     });
     if (!(crashBets.length > 0)) {

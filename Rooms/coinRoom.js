@@ -119,7 +119,7 @@ function resetRoom() {
     timeBetweenSpins();
 }
 
-function currentDaySpinAmount() {
+async function currentDaySpinAmount() {
     if (currentDate < new Date().toLocaleDateString("lt")) {
         currentDaySpin = 1;
         currentDate = new Date().toLocaleDateString("lt");
@@ -185,7 +185,7 @@ async function getClientStatusToMessage() {
         if (betResult == 0 && await checkAndRemoveClientLives(bet.clientId)) {
             const betOutcome = await cancelBet(bet, io);
             bet.betAmount = betOutcome;
-            const betMessage = setClientBetMutualOutcomeMessage(bet);
+            const betMessage = await setClientBetMutualOutcomeMessage(bet);
             coinClientMessages.push(betMessage);
             coinClientMessages = cleanUpList(100, coinClientMessages);
         } else {
@@ -196,7 +196,7 @@ async function getClientStatusToMessage() {
         }
         count++;
         if (count === array.length) {
-            currentDaySpinAmount();
+            await currentDaySpinAmount();
         }
     });
     if (!(coinBets.length > 0)) {
