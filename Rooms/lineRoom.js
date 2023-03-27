@@ -20,10 +20,13 @@ var lineBets = [];
 var previousLineResults = [];
 
 var itemProbability = [];
+var nonWinnableProbability = [];
 
 var coeficients = [0, 1, 1.5, 2, 4, 10];
 
 var itemProbabilityFactors = [250, 50, 100, 25, 15, 2];
+
+var nonWinnableItemProbabilities = [100, 100, 100, 100, 100, 50];
 
 function lineSockets(lineIo) {
     io = lineIo;
@@ -69,6 +72,12 @@ function setUpItemCoefficients() {
             itemProbability.push(coeficients[i]);
         }
     }
+
+    for (let i = 0; i < nonWinnableItemProbabilities.length; i++) {
+        for (let y = 0; y < itemProbabilityFactors[i]; y++) {
+            nonWinnableProbability.push(coeficients[i]);
+        }
+    }
 }
 
 function calculateNumber() {
@@ -79,7 +88,7 @@ function calculateNumber() {
             lineNumber = coeficients[coeficients.indexOf(number)];
             itemList.push(number);
         }
-        itemList.push(itemProbability[(Math.floor(Math.random() * itemProbability.length))]);
+        itemList.push(nonWinnableProbability[(Math.floor(Math.random() * nonWinnableProbability.length))]);
     }
     if (checkIfThereIsPeopleInRoom()) io.to(lineRoom).emit('lineSet', itemList);
     setTimeout(() => {
