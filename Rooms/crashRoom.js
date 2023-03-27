@@ -119,7 +119,7 @@ function timeBetweenSpins() {
 function resetRoom() {
     if (checkIfThereIsPeopleInRoom()) io.to(crashRoom).emit('newRound', true);
     sendPreviousCrashResults();
-    crashNumber = 1.00;
+    crashNumber = 0.00;
     ableToBet = true;
     ableToStop = false;
     sendBetLostResultToClient();
