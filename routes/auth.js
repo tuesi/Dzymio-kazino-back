@@ -6,9 +6,18 @@ router.get('/discord/redirect', passport.authenticate('discord', { failureRedire
     res.redirect(process.env.FRONT_URL);
 });
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
     if (req.user) {
-        res.send(req.user);
+        if (process.env.WHITELIST == 'true') {
+            authorized = await Whitelist.findOne({ discordId: id }) ? true : false;
+            if (authorized) {
+                res.send(req.user);
+            } else {
+                res.status(401).send({ msg: 'Unauthorized' });
+            }
+        } else {
+            res.send(req.user);
+        }
     } else {
         res.status(401).send({ msg: 'Unauthorized' });
     }
