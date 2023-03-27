@@ -4,7 +4,7 @@ const BetResponseObject = require('../objects/betResponseObject');
 var io;
 crashRoom = 'crash';
 
-var crashNumber = 1.00;
+var crashNumber = 0.00;
 var ableToBet = true;
 var ableToStop = false;
 var spinTimer = 0;
@@ -19,9 +19,9 @@ var currentDaySpin = 1;
 var currentDate = new Date();
 
 var mainNumberProbability = [];
-var mainNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-//                               1     2    3    4   5   6   7   8   9  10
-var mainNumbersProbabilities = [300, 300, 200, 100, 85, 70, 60, 50, 25, 5];
+var mainNumbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+//                              0   1     2    3    4   5   6   7   8   9  10
+var mainNumbersProbabilities = [300, 300, 300, 200, 100, 85, 70, 60, 50, 25, 5];
 
 function crashSockets(crashIo) {
     io = crashIo;
