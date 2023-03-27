@@ -21,12 +21,15 @@ var previousLineResults = [];
 
 var itemProbability = [];
 var nonWinnableProbability = [];
+var noonePlayingProbability = [];
 
 var coeficients = [0, 1, 1.5, 2, 4, 10];
 
-var itemProbabilityFactors = [450, 50, 100, 25, 15, 2];
+var itemProbabilityFactors = [250, 50, 100, 25, 15, 2];
 
 var nonWinnableItemProbabilities = [100, 100, 100, 100, 100, 50];
+
+var noonePlayingFactors = [200, 100, 100, 100, 100, 10];
 
 function lineSockets(lineIo) {
     io = lineIo;
@@ -73,9 +76,18 @@ function setUpItemCoefficients() {
         }
     }
 
+
+    //NON WINNABLE
     for (let i = 0; i < nonWinnableItemProbabilities.length; i++) {
         for (let y = 0; y < nonWinnableItemProbabilities[i]; y++) {
             nonWinnableProbability.push(coeficients[i]);
+        }
+    }
+
+    //EMPTY
+    for (let i = 0; i < noonePlayingFactors.length; i++) {
+        for (let y = 0; y < noonePlayingFactors[i]; y++) {
+            noonePlayingProbability.push(coeficients[i]);
         }
     }
 }
@@ -84,9 +96,15 @@ function calculateNumber() {
     itemList = [];
     for (var i = 0; i < 50; i++) {
         if (i == 41) {
-            let number = itemProbability[(Math.floor(Math.random() * itemProbability.length))];
-            lineNumber = coeficients[coeficients.indexOf(number)];
-            itemList.push(number);
+            if (lineBets.length > 0) {
+                let number = itemProbability[(Math.floor(Math.random() * itemProbability.length))];
+                lineNumber = coeficients[coeficients.indexOf(number)];
+                itemList.push(number);
+            } else {
+                let number = noonePlayingProbability[(Math.floor(Math.random() * noonePlayingProbability.length))];
+                lineNumber = coeficients[coeficients.indexOf(number)];
+                itemList.push(number);
+            }
         }
         itemList.push(nonWinnableProbability[(Math.floor(Math.random() * nonWinnableProbability.length))]);
     }
