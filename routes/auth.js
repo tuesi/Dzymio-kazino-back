@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const passport = require('passport');
+const Whitelist = require('../database/schemas/Whitelist');
 
 router.get('/discord', passport.authenticate('discord'));
 router.get('/discord/redirect', passport.authenticate('discord', { failureRedirect: process.env.ERROR_URL }), (req, res) => {
