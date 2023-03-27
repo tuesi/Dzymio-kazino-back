@@ -24,7 +24,7 @@ var nonWinnableProbability = [];
 
 var coeficients = [0, 1, 1.5, 2, 4, 10];
 
-var itemProbabilityFactors = [250, 50, 100, 25, 15, 2];
+var itemProbabilityFactors = [450, 50, 100, 25, 15, 2];
 
 var nonWinnableItemProbabilities = [100, 100, 100, 100, 100, 50];
 
