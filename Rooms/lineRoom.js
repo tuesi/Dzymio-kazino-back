@@ -29,7 +29,7 @@ var itemProbabilityFactors = [300, 100, 50, 25, 15, 2];
 
 var nonWinnableItemProbabilities = [100, 100, 80, 80, 50, 5];
 
-var noonePlayingFactors = [350, 100, 100, 100, 100, 10];
+var noonePlayingFactors = [200, 100, 100, 100, 100, 10];
 
 function lineSockets(lineIo) {
     io = lineIo;
