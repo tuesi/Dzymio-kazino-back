@@ -10,6 +10,7 @@ router.get('/', async (req, res) => {
     if (req.user) {
         if (process.env.WHITELIST == 'true') {
             authorized = await Whitelist.findOne({ discordId: req.user.discordId }) ? true : false;
+            console.log(authorized);
             if (authorized) {
                 res.send(req.user);
             } else {
