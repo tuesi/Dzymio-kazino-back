@@ -74,7 +74,7 @@ function setUpItemCoefficients() {
     }
 
     for (let i = 0; i < nonWinnableItemProbabilities.length; i++) {
-        for (let y = 0; y < itemProbabilityFactors[i]; y++) {
+        for (let y = 0; y < nonWinnableItemProbabilities[i]; y++) {
             nonWinnableProbability.push(coeficients[i]);
         }
     }
