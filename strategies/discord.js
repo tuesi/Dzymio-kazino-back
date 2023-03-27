@@ -68,7 +68,7 @@ passport.use(new DiscordStrategy({
             return done(err, null);
         }
     } else {
-        return done(null, false);
+        return done(null, null);
     }
 })
 );
