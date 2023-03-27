@@ -6,7 +6,7 @@ crashRoom = 'crash';
 
 var crashNumber = 1.00;
 var ableToBet = true;
-var ableToStop = true;
+var ableToStop = false;
 var spinTimer = 0;
 
 var timeTillnextSpin = process.env.TIMER_IN_SECONDS;
@@ -109,6 +109,7 @@ function timeBetweenSpins() {
         if (spinTimer < 0) {
             clearInterval(spinTime);
             setTimeout(function () {
+                ableToStop = true;
                 moveCrash();
             }, 180);
         }
@@ -120,7 +121,7 @@ function resetRoom() {
     sendPreviousCrashResults();
     crashNumber = 1.00;
     ableToBet = true;
-    ableToStop = true;
+    ableToStop = false;
     sendBetLostResultToClient();
     getLostClientStatusToMessage();
     timeBetweenSpins();
