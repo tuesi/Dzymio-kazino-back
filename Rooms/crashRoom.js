@@ -21,7 +21,7 @@ var currentDate = new Date();
 var mainNumberProbability = [];
 var mainNumbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 //                              0   1     2    3    4   5   6   7   8   9  10
-var mainNumbersProbabilities = [200, 300, 300, 200, 100, 85, 70, 60, 50, 25, 5];
+var mainNumbersProbabilities = [100, 300, 300, 200, 100, 85, 70, 60, 50, 25, 5];
 
 function crashSockets(crashIo) {
     io = crashIo;
