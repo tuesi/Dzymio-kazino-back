@@ -105,7 +105,8 @@ function calculateNumber() {
                 //APRILS FOOLS
                 lineNumber = 10;
                 //lineNumber = coeficients[coeficients.indexOf(number)];
-                itemList.push(number);
+                //itemList.push(number);
+                itemList.push(10);
             }
         }
         //APRILS FOOLS
