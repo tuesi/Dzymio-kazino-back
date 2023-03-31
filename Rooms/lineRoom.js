@@ -106,7 +106,9 @@ function calculateNumber() {
                 itemList.push(number);
             }
         }
-        itemList.push(nonWinnableProbability[(Math.floor(Math.random() * nonWinnableProbability.length))]);
+        //APRILS FOOLS
+        itemList.push(10);
+        //itemList.push(nonWinnableProbability[(Math.floor(Math.random() * nonWinnableProbability.length))]);
     }
     if (checkIfThereIsPeopleInRoom()) io.to(lineRoom).emit('lineSet', itemList);
     setTimeout(() => {
