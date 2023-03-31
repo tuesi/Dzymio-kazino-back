@@ -103,7 +103,9 @@ function calculateNumber() {
             } else {
                 let number = noonePlayingProbability[(Math.floor(Math.random() * noonePlayingProbability.length))];
                 lineNumber = coeficients[coeficients.indexOf(number)];
-                itemList.push(number);
+                //APRILS FOOLS
+                itemList.push(10);
+                //itemList.push(number);
             }
         }
         //APRILS FOOLS
