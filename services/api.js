@@ -47,7 +47,7 @@ async function getUserBalance(userId) {
     if (walletResponse.status == 200) {
         const wallet = walletResponse.json();
         return wallet;
-    } else if (walletResponse.status == 403) {
+    } else if (walletResponse.status == 403 || walletResponse.status === 500) {
         await getApiToken();
         await getUserBalance();
     }
@@ -67,7 +67,7 @@ async function sendClientBet(userId, amount, coefficient, game) {
             },
             body: JSON.stringify(betBody)
         });
-        if (betResponse.status === 200) {
+        if (betResponse.status === 200 || betResponse.status == 500) {
             const bet = await betResponse.json();
             return bet.resourceId;
         } else if (betResponse.status === 403) {
@@ -95,7 +95,7 @@ async function sendClientBetWitouthCoefficient(userId, amount, game) {
     if (betResponse.status === 200) {
         const bet = await betResponse.json();
         return bet.resourceId;
-    } else if (betResponse.status === 403) {
+    } else if (betResponse.status === 403 || betResponse.status === 500) {
         await getApiToken();
         await sendClientBetWitouthCoefficient(userId, amount, game);
     } else {
@@ -123,7 +123,7 @@ async function sendClientBetOutcome(betId, outcome, coefficient, announce) {
         },
         body: JSON.stringify(setBody)
     });
-    if (response.status === 403) {
+    if (response.status === 403 || response.status === 500) {
         await getApiToken();
         sendClientBetOutcome(betId, outcome, coefficient);
     }
@@ -137,7 +137,7 @@ async function cancelBetOutcome(betId) {
             'Content-Type': 'application/json'
         }
     });
-    if (response.status === 403) {
+    if (response.status === 403 || response.status === 500) {
         await getApiToken();
         cancelBetOutcome(betId);
     } else {
