@@ -102,16 +102,11 @@ function calculateNumber() {
                 itemList.push(number);
             } else {
                 let number = noonePlayingProbability[(Math.floor(Math.random() * noonePlayingProbability.length))];
-                //APRILS FOOLS
-                lineNumber = 10;
-                //lineNumber = coeficients[coeficients.indexOf(number)];
-                //itemList.push(number);
-                itemList.push(10);
+                lineNumber = coeficients[coeficients.indexOf(number)];
+                itemList.push(number);
             }
         }
-        //APRILS FOOLS
-        itemList.push(10);
-        //itemList.push(nonWinnableProbability[(Math.floor(Math.random() * nonWinnableProbability.length))]);
+        itemList.push(nonWinnableProbability[(Math.floor(Math.random() * nonWinnableProbability.length))]);
     }
     if (checkIfThereIsPeopleInRoom()) io.to(lineRoom).emit('lineSet', itemList);
     setTimeout(() => {
