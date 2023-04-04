@@ -15,6 +15,7 @@ const { coinSockets, coinRoomEvents, initialCoinRoomEvent } = require('./Rooms/c
 const { lineSockets, lineRoomEvents, initialLineRoomEvent } = require('./Rooms/lineRoom');
 const { crashSockets, crashRoomEvents, initialCrashRoomEvent } = require('./Rooms/crashRoom');
 const { getBetHistory } = require('./services/getBetHistory');
+const { higherLowerSockets, initialHigherLowerRoomEvent, higherLowerRoomEvents } = require('./Rooms/higherLowerRoom');
 
 //TEST
 const io = require('socket.io')(httpServer, {
@@ -36,6 +37,7 @@ wheelRoom = 'wheel';
 coinRoom = 'coin';
 lineRoom = 'line';
 crashRoom = 'crash';
+higherLowerRoom = 'higherLower';
 
 app.set("trust proxy", 1);
 
@@ -88,6 +90,7 @@ wheelSockets(io);
 coinSockets(io);
 lineSockets(io);
 crashSockets(io);
+higherLowerSockets(io);
 
 io.on("connection", async (socket) => {
   console.log("CONNECT");
@@ -118,6 +121,11 @@ io.on("connection", async (socket) => {
       socket.join(crashRoom);
       initialCrashRoomEvent(socket);
       //remove socket from room if is in another room
+    } else if (roomName == higherLowerRoom) {
+      console.log('higherlower');
+      leaveRoom(socket);
+      socket.join(higherLowerRoom);
+      initialHigherLowerRoomEvent(socket);
     }
   });
 
@@ -134,6 +142,9 @@ io.on("connection", async (socket) => {
     } else if (io.sockets.adapter.rooms.get(crashRoom) && io.sockets.adapter.rooms.get(crashRoom).has(socket.id)
       && eventobject.room === crashRoom) {
       crashRoomEvents(socket, eventobject);
+    } else if (io.sockets.adapter.rooms.get(higherLowerRoom) && io.sockets.adapter.rooms.get(higherLowerRoom).has(socket.id)
+      && eventobject.room === higherLowerRoom) {
+      higherLowerRoomEvents(socket, eventobject);
     }
   });
 
@@ -152,6 +163,8 @@ function leaveRoom(socket) {
     socket.leave(lineRoom);
   } else if (io.sockets.adapter.rooms.get(crashRoom) && io.sockets.adapter.rooms.get(crashRoom).has(socket.id)) {
     socket.leave(crashRoom);
+  } else if (io.sockets.adapter.rooms.get(higherLowerRoom) && io.sockets.adapter.rooms.get(higherLowerRoom).has(socket.id)) {
+    socket.leave(higherLowerRoom);
   }
 }
 
