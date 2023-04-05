@@ -32,7 +32,7 @@ function initialHigherLowerRoomEvent(socket) {
     socket.emit('timeTillSpin', spinTimer);
     socket.emit('initialButtonState', ableToBet);
     socket.emit('clientBetHistory', higherLowerClientMessages);
-    socket.emit('initialHigherLowerPos', { value: number });
+    socket.emit('initialHigherLowerPos', currentNumber);
 }
 
 function checkIfThereIsPeopleInRoom() {
@@ -61,7 +61,13 @@ function higherLowerRoomEvents(socket, eventObject) {
 function calculateNumber() {
     previousNumber = currentNumber;
     currentNumber = nextNumber;
-    nextNumber = Math.floor(Math.random() * 100) + 1;
+    const direction = Math.floor(Math.random() * 3);
+    if (direction === 0) {
+        nextNumber = currentNumber;
+    } else {
+        nextNumber = Math.floor(Math.random() * 100) + 1;
+    }
+
 }
 
 function sendPreviousHigherLower() {
