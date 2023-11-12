@@ -20,31 +20,6 @@ async function getUserNameFromGuild(accessToken) {
     }
 }
 
-//TODO make this in backend of jimmy
-async function getIsUserLotoMember(userId) {
-    if (!this.token) {
-        await getApiToken();
-    }
-    const isLotoMemberResponse = await fetch("https://dzimyneutron.herokuapp.com/v1/lotoMember/" + userId, {
-        method: 'GET',
-        headers: {
-            Authorization: `Bearer ${this.token}`
-        }
-    });
-    //TODO change later
-    return false;
-    if (isLotoMemberResponse.status == 200) {
-        const isLotoMember = isLotoMemberResponse.json();
-        return isLotoMember;
-    } else if (isLotoMemberResponse.status == 403) {
-        await getApiToken();
-        await getUserBalance();
-    }
-    else {
-        console.log(isLotoMemberResponse);
-    }
-}
-
 async function getApiToken() {
     const tokenResponse = await fetch("https://dzimyneutron.herokuapp.com/v1/auth/login", {
         method: 'POST',
@@ -259,5 +234,5 @@ async function getLeaderboard() {
 module.exports = {
     getUserNameFromGuild, getApiToken, getUserBalance, sendClientBet, sendClientBetOutcome,
     sendClientBetWitouthCoefficient, addClientLives, removeClientLives, getClientLives, resetAbleToGetLives,
-    updateLeaderboard, getLeaderboard, cancelBetOutcome, wasGivenToday, getIsUserLotoMember
+    updateLeaderboard, getLeaderboard, cancelBetOutcome, wasGivenToday
 }
