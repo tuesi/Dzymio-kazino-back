@@ -18,15 +18,15 @@ const { getBetHistory } = require('./services/getBetHistory');
 const { higherLowerSockets, initialHigherLowerRoomEvent, higherLowerRoomEvents } = require('./Rooms/higherLowerRoom');
 
 //TEST
-const io = require('socket.io')(httpServer, {
-  cors: { origins: 'http://localhost:4200' }
-});
+// const io = require('socket.io')(httpServer, {
+//   cors: { origins: 'http://localhost:4200' }
+// });
 //TEST
 
 //PROD
-// const io = require('socket.io')(httpServer, {
-//   cors: { origins: 'https://debils.gay' }
-// });
+const io = require('socket.io')(httpServer, {
+  cors: { origins: 'https://debils.gay' }
+});
 //PROD
 
 mongoose.connect(process.env.MONGOOSE);
@@ -42,27 +42,8 @@ higherLowerRoom = 'higherLower';
 app.set("trust proxy", 1);
 
 //TESTING
-app.use(cors({
-  origin: ['http://localhost:4200'],
-  credentials: true
-}));
-
-app.use(session({
-  secret: process.env.COOKIE,
-  name: 'SausainiukasGuminiukas',
-  cookie: {
-    secure: false,
-    maxAge: 2592000000 //menesis
-  },
-  resave: false,
-  saveUninitialized: false,
-  store: Store.create({ mongoUrl: process.env.MONGOOSE })
-}));
-//TESTING
-
-//PROD
 // app.use(cors({
-//   origin: ['https://debils.gay'],
+//   origin: ['http://localhost:4200'],
 //   credentials: true
 // }));
 
@@ -70,16 +51,35 @@ app.use(session({
 //   secret: process.env.COOKIE,
 //   name: 'SausainiukasGuminiukas',
 //   cookie: {
-//     domain: 'debils.gay',
-//     sameSite: 'none',
-//     httpOnly: false,
-//     secure: true,
+//     secure: false,
 //     maxAge: 2592000000 //menesis
 //   },
 //   resave: false,
 //   saveUninitialized: false,
 //   store: Store.create({ mongoUrl: process.env.MONGOOSE })
 // }));
+//TESTING
+
+//PROD
+app.use(cors({
+  origin: ['https://debils.gay'],
+  credentials: true
+}));
+
+app.use(session({
+  secret: process.env.COOKIE,
+  name: 'SausainiukasGuminiukas',
+  cookie: {
+    domain: 'debils.gay',
+    sameSite: 'none',
+    httpOnly: false,
+    secure: true,
+    maxAge: 2592000000 //menesis
+  },
+  resave: false,
+  saveUninitialized: false,
+  store: Store.create({ mongoUrl: process.env.MONGOOSE })
+}));
 //PROD
 
 app.use(passport.initialize());
