@@ -20,10 +20,16 @@ var lineBets = [];
 var previousLineResults = [];
 
 var itemProbability = [];
+var nonWinnableProbability = [];
+var noonePlayingProbability = [];
 
 var coeficients = [0, 1, 1.5, 2, 4, 10];
 
-var itemProbabilityFactors = [250, 50, 100, 25, 15, 2];
+var itemProbabilityFactors = [300, 100, 70, 35, 25, 2];
+
+var nonWinnableItemProbabilities = [100, 100, 80, 80, 50, 5];
+
+var noonePlayingFactors = [300, 200, 100, 70, 50, 10];
 
 function lineSockets(lineIo) {
     io = lineIo;
@@ -69,17 +75,38 @@ function setUpItemCoefficients() {
             itemProbability.push(coeficients[i]);
         }
     }
+
+
+    //NON WINNABLE
+    for (let i = 0; i < nonWinnableItemProbabilities.length; i++) {
+        for (let y = 0; y < nonWinnableItemProbabilities[i]; y++) {
+            nonWinnableProbability.push(coeficients[i]);
+        }
+    }
+
+    //EMPTY
+    for (let i = 0; i < noonePlayingFactors.length; i++) {
+        for (let y = 0; y < noonePlayingFactors[i]; y++) {
+            noonePlayingProbability.push(coeficients[i]);
+        }
+    }
 }
 
 function calculateNumber() {
     itemList = [];
     for (var i = 0; i < 50; i++) {
         if (i == 41) {
-            let number = itemProbability[(Math.floor(Math.random() * itemProbability.length))];
-            lineNumber = coeficients[coeficients.indexOf(number)];
-            itemList.push(number);
+            if (lineBets.length > 0) {
+                let number = itemProbability[(Math.floor(Math.random() * itemProbability.length))];
+                lineNumber = coeficients[coeficients.indexOf(number)];
+                itemList.push(number);
+            } else {
+                let number = noonePlayingProbability[(Math.floor(Math.random() * noonePlayingProbability.length))];
+                lineNumber = coeficients[coeficients.indexOf(number)];
+                itemList.push(number);
+            }
         }
-        itemList.push(itemProbability[(Math.floor(Math.random() * itemProbability.length))]);
+        itemList.push(nonWinnableProbability[(Math.floor(Math.random() * nonWinnableProbability.length))]);
     }
     if (checkIfThereIsPeopleInRoom()) io.to(lineRoom).emit('lineSet', itemList);
     setTimeout(() => {

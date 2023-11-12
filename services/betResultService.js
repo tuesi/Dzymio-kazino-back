@@ -41,12 +41,12 @@ function getWheelBetStatus(betName, resultValue, wheelValues, wheelColors) {
             }
             return 0;
         case "even":
-            if (parseInt(wheelValues[resultValue]) % 2 == 0) {
+            if (parseInt(wheelValues[resultValue]) % 2 == 0 && wheelValues[resultValue] != 'W' && wheelValues[resultValue] != 'X') {
                 return 2;
             }
             return 0;
         case "odd":
-            if (parseInt(wheelValues[resultValue]) % 2 != 0) {
+            if (parseInt(wheelValues[resultValue]) % 2 != 0 && wheelValues[resultValue] != 'W' && wheelValues[resultValue] != 'X') {
                 return 2;
             }
             return 0;
